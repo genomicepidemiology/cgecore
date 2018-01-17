@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from setuptools import setup, find_packages
 
 with open("README.md", 'r') as f:
@@ -12,8 +13,8 @@ setup(
    name='cgecore',
    version=version,
    description='Center for Genomic Epidemiology Core Module',
-   license="Apache License, Version 2.0",
    long_description=long_description,
+   license="Apache License, Version 2.0",
    author='Martin Thomsen',
    author_email='mcft@bioinformatics.dtu.dk',
    url="https://bitbucket.org/genomicepidemiology/cge_core_module",
