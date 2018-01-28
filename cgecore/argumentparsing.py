@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ THIS MODULE CONTAINS ALL THE SHARED WRAPPER FUNCTIONS """
 ################################################################################
 #                              CGE FUNCTION MODULE                             #
 ################################################################################
 # This script is part of the CGE Pipeline structure
-import os
+import os, sys
 from subprocess import Popen, PIPE
 from argparse import ArgumentParser, RawDescriptionHelpFormatter, SUPPRESS
 
@@ -75,20 +75,6 @@ cge.cbs.dtu.dk/services
    debug.log("ARGS: %s"%args)
    return args
 
-def get_fq_pairs(path):
-   """ Use Rolf's input parser script to find valid paired fastq files. Returns
-       list of pairs.
-   """
-   if os.path.exists(path):
-      script = '/home/data1/services/CGEpipeline/CGEmodules/parse_input.pl'
-      cmd = '%s %s/*'%(script,paths['uploads'])
-      p=Popen(cmd, stdout=PIPE, stderr=PIPE)
-      out, err = process.communicate()
-      # strip and remove empty lines
-      output_list = filter(None, map(str.strip, out.split('\n'), []))
-      return [x.split('\t')[2:] for x in output_list if x[:6] == 'paired']
-   else: return []
-
 def check_file_type(files):
    """ Check whether the input files are in fasta format, reads format or
        other/mix formats.
@@ -96,13 +82,16 @@ def check_file_type(files):
    all_are_fasta = True
    all_are_reads = True
    all_are_empty = True
-   if isinstance(files, (str, unicode)): files = [files]
+   if sys.version_info < (3, 0):
+      if isinstance(files, (str, unicode)): files = [files]
+   else:
+      if isinstance(files, str): files = [files]
    for file_ in files:
       debug.log('Checking file type: %s\n'%file_)
       # Check if file is empty
       if os.stat(file_).st_size == 0: continue
       else: all_are_empty = False
-      with open_(file_, 'r') as f:
+      with open_(file_) as f:
          fc = f.readline()[0]
          if fc != "@": all_are_reads = False
          if fc != ">": all_are_fasta = False

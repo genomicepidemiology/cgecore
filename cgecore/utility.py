@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ THIS MODULE CONTAINS ALL THE SHARED WRAPPER FUNCTIONS """
 ################################################################################
 #                              CGE FUNCTION MODULE                             #
@@ -55,7 +55,12 @@ class Debug():
          linefeed = '\n'
       else: linefeed = ''
       if print2screen: print(linefeed.join(str(string) for string in lst))
-      if isinstance(logfile, file):
+      try: file_instance = isinstance(logfile, file)
+      except NameError as e:
+         from io import IOBase
+         try: file_instance = isinstance(logfile, IOBase)
+         except: raise e
+      if file_instance:
          logfile.write(linefeed.join(str(string) for string in lst) + linefeed)
       elif isinstance(logfile, str) and os.path.exists(logfile):
          with open_(logfile, 'a') as f:
@@ -113,7 +118,11 @@ class adv_dict(dict):
       '''
       inv_map = {}
       for k, v in self.items():
-         if isinstance(v, (str, int, float, long)): v = [v]
+         if sys.version_info < (3, 0):
+            acceptable_v_instance = isinstance(v, (str, int, float, long))
+         else:
+            acceptable_v_instance = isinstance(v, (str, int, float))
+         if acceptable_v_instance: v = [v]
          elif not isinstance(v, list):
             raise Exception('Error: Non supported value format! Values may only'
                             ' be numerical, strings, or lists of numbers and '
@@ -368,10 +377,13 @@ def sort_and_distribute(array, splits=2):
    if not isinstance(array, (list,tuple)): raise TypeError("array must be a list")
    if not isinstance(splits, int): raise TypeError("splits must be an integer")
    remaining = sorted(array)
-   myxrange = xrange(splits)
-   groups = [[] for i in myxrange]
+   if sys.version_info < (3, 0):
+      myrange = xrange(splits)
+   else:
+      myrange = range(splits)
+   groups = [[] for i in myrange]
    while len(remaining) > 0:
-      for i in myxrange:
+      for i in myrange:
          if len(remaining) > 0: groups[i].append(remaining.pop(0))
    return groups
 

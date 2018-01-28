@@ -8,12 +8,12 @@ from .utility import (adv_dict, copy_dir, copy_file, create_zip_dir, debug,
                       sort_and_distribute
                       )
 from .cmdline import Program, proglist, cmd2list
-from .argumentparsing import (check_file_type, get_arguments, get_fq_pairs,
-                              get_string, make_file_list
+from .argumentparsing import (check_file_type, get_arguments, get_string,
+                              make_file_list
                               )
 
 #####################
-__version__ = "1.0.0"
+__version__ = "1.0.4"
 __all__ = [
     "argumentparsing",
     "cmdline",
