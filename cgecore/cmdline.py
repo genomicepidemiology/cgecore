@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ THIS MODULE CONTAINS ALL THE SHARED WRAPPER FUNCTIONS """
 ################################################################################
 #                              CGE FUNCTION MODULE                             #
 ################################################################################
 # This script is part of the CGE Pipeline structure
-import os
+import sys, os
 from subprocess import Popen, PIPE
 from pipes import quote
 from time import time, sleep
@@ -200,7 +200,10 @@ class Program:
                         cmd.append(ppath)
                         break
             cmd.append(self.path)
-            cmd.extend([str(x) if not isinstance(x, (unicode)) else x.encode('utf-8') for x in [quote(str(x)) for x in self.args]+self.unquoted_args])
+            if sys.version_info < (3, 0):
+               cmd.extend([str(x) if not isinstance(x, (unicode)) else x.encode('utf-8') for x in [quote(str(x)) for x in self.args]+self.unquoted_args])
+            else:
+               cmd.extend([str(x) for x in [quote(str(x)) for x in self.args]+self.unquoted_args])
       else:
          debug.log('Error: Program path not set!')
       return ' '.join(cmd)
@@ -213,7 +216,11 @@ class Program:
       debug.log("Adding Arguments: %s"%(arg))
       if isinstance(arg, (int,float)): self.args.append(str(arg))
       if isinstance(arg, str): self.args.append(arg)
-      if isinstance(arg, list): self.args.extend([str(x) if not isinstance(x, (unicode)) else x.encode('utf-8') for x in arg])
+      if isinstance(arg, list):
+         if sys.version_info < (3, 0):
+            self.args.extend([str(x) if not isinstance(x, (unicode)) else x.encode('utf-8') for x in arg])
+         else:
+            self.args.extend([str(x) for x in arg])
    def execute(self):
       """ This function Executes the program with set arguments. """
       prog_cmd = self.get_cmd().strip()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ THIS MODULE CONTAINS ALL THE SHARED WRAPPER FUNCTIONS """
 ################################################################################
 #                              CGE FUNCTION MODULE                             #
@@ -55,7 +55,12 @@ class Debug():
          linefeed = '\n'
       else: linefeed = ''
       if print2screen: print(linefeed.join(str(string) for string in lst))
-      if isinstance(logfile, file):
+      try: file_instance = isinstance(logfile, file)
+      except NameError as e:
+         from io import IOBase
+         try: file_instance = isinstance(logfile, IOBase)
+         except: raise e
+      if file_instance:
          logfile.write(linefeed.join(str(string) for string in lst) + linefeed)
       elif isinstance(logfile, str) and os.path.exists(logfile):
          with open_(logfile, 'a') as f:
@@ -113,7 +118,11 @@ class adv_dict(dict):
       '''
       inv_map = {}
       for k, v in self.items():
-         if isinstance(v, (str, int, float, long)): v = [v]
+         if sys.version_info < (3, 0):
+            acceptable_v_instance = isinstance(v, (str, int, float, long))
+         else:
+            acceptable_v_instance = isinstance(v, (str, int, float))
+         if acceptable_v_instance: v = [v]
          elif not isinstance(v, list):
             raise Exception('Error: Non supported value format! Values may only'
                             ' be numerical, strings, or lists of numbers and '
@@ -211,9 +220,9 @@ class REGroup():
       else: return False
 
 ############# ITERATORS #############
-def seqs_from_file(filename, exit_on_err=False):
+def seqs_from_file(filename, exit_on_err=False, return_qual=False):
    """Extract sequences from a file
-
+   
    Name:
       seqs_from_file
    Author(s):
@@ -226,7 +235,7 @@ def seqs_from_file(filename, exit_on_err=False):
       filename: string which contain a path to the input file
    Supported Formats:
       fasta, fastq
-
+   
    USAGE:
    >>> import os, sys
    >>> # Create fasta test file
@@ -257,19 +266,17 @@ def seqs_from_file(filename, exit_on_err=False):
          sys.stderr.write('Error: %s\n'%msg)
          sys.exit(1)
       else: raise IOError(msg)
-
+   
    # EXTRACT DATA
-   with open_(filename,"r") as f:
+   with open_(filename,"rt") as f:
       query_seq_segments = []
-      seq, name, desc = '', '', ''
-      line = ''
-      next_line = f.next
+      seq, name, desc, qual = '', '', '', ''
       add_segment = query_seq_segments.append
-      for line in f:
-         if len(line.strip()) == 0: continue
+      for l in f:
+         if len(l.strip()) == 0: continue
          #sys.stderr.write("%s\n"%line)
-         fields=line.strip().split()
-         if line[0] == ">":
+         fields=l.strip().split()
+         if l.startswith(">"):
             # FASTA HEADER FOUND
             if query_seq_segments != []:
                # YIELD SEQUENCE AND RESET
@@ -279,29 +286,31 @@ def seqs_from_file(filename, exit_on_err=False):
                del query_seq_segments[:]
             name = fields[0][1:]
             desc = ' '.join(fields[1:])
-
-         elif line[0] == "@":
+         
+         elif l.startswith("@"):
             # FASTQ HEADER FOUND
             name = fields[0][1:]
             desc = ' '.join(fields[1:])
             try:
                # EXTRACT FASTQ SEQUENCE
-               line = next_line()
-               seq  = line.strip().split()[0]
+               seq  = next(f).strip().split()[0]
                # SKIP SECOND HEADER LINE AND QUALITY SCORES
-               line = next_line()
-               line = next_line() # Qualities
+               l = next(f)
+               qual = next(f) # Qualities
             except:
                break
             else:
                # YIELD SEQUENCE AND RESET
-               yield (seq, name, desc)
-               seq, name, desc = '', '', ''
-
+               if return_qual:
+                  yield (seq, qual, name, desc)
+               else:
+                  yield (seq, name, desc)
+               seq, name, desc, qual = '', '', '', ''
+         
          elif len(fields[0])>0:
             # EXTRACT FASTA SEQUENCE
             add_segment(fields[0])
-
+      
       # CHECK FOR LAST FASTA SEQUENCE
       if query_seq_segments != []:
          # YIELD SEQUENCE
@@ -324,7 +333,7 @@ def open_(filename, mode=None, compresslevel=9):
    ...     f.read()
    """
    if filename[-3:] == '.gz':
-      if mode is None: mode = 'rb'
+      if mode is None: mode = 'rt'
       return closing(gzip.open(filename, mode, compresslevel))
    else:
       if mode is None: mode = 'r'
@@ -368,10 +377,13 @@ def sort_and_distribute(array, splits=2):
    if not isinstance(array, (list,tuple)): raise TypeError("array must be a list")
    if not isinstance(splits, int): raise TypeError("splits must be an integer")
    remaining = sorted(array)
-   myxrange = xrange(splits)
-   groups = [[] for i in myxrange]
+   if sys.version_info < (3, 0):
+      myrange = xrange(splits)
+   else:
+      myrange = range(splits)
+   groups = [[] for i in myrange]
    while len(remaining) > 0:
-      for i in myxrange:
+      for i in myrange:
          if len(remaining) > 0: groups[i].append(remaining.pop(0))
    return groups
 
