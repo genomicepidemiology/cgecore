@@ -245,12 +245,17 @@ class Program:
                ('touch {stdout} {stderr}\n'
                 'chmod a+r {stdout} {stderr}\n'
                 '{cmd} 1> {stdout} 2> {stderr}\n'
-                'echo Done >> {stderr}\n').format(
+                'ec=$?\n').format(
                   stdout=self.stdout,
                   stderr=self.stderr,
                   cmd=prog_cmd
                   )
                )
+            if not self.forcewait:
+               f.write(('if [ "$ec" -ne "0" ]; then echo "Error" >> {stderr}; '
+                        'else echo "Done" >> {stderr}; fi\n').format(
+                  stderr=self.stderr))
+            f.write('exit $ec\n')
          os.chmod(script, 0o744)
          
          if self.queue is not None:
@@ -285,8 +290,10 @@ class Program:
             self.p = Popen(cmd)
             ec = self.p.wait()
             if ec == 0:
+               debug.log("Program finished successfully!")
                self.status = 'Done'
             else:
+               debug.log("Program failed on execution!")
                self.status = 'Failure'
             self.p = None
          else: # WaitOn should be called to determine if the program has ended
