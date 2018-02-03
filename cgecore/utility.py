@@ -296,7 +296,7 @@ def seqs_from_file(filename, exit_on_err=False, return_qual=False):
                seq  = next(f).strip().split()[0]
                # SKIP SECOND HEADER LINE AND QUALITY SCORES
                l = next(f)
-               qual = next(f) # Qualities
+               qual = next(f).strip() # Qualities
             except:
                break
             else:
