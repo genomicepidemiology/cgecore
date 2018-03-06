@@ -74,18 +74,19 @@ class ProgramList(object):
    def exists(self, name):
       ''' Checks whether the program exists in the program list. '''
       return name in dir(self)
-   def return_timer(self, name, timer):
+   def return_timer(self, name, status, timer):
       ''' Return a text formatted timer '''
-      timer_template = '%s  %s : %s : %9s'
+      timer_template = '%s  %s  %s : %s : %9s'
       t = str(timedelta(0, timer)).split(',')[-1].strip().split(':')
       #t = str(timedelta(0, timer)).split(':')
       if len(t) == 4:
-         d, h, m, s = int(t[0]), int(t[1]), int(t[2]), float(t[3])
+         h, m, s = int(t[0])*24 + int(t[1]), int(t[2]), float(t[3])
       elif len(t) == 3: h, m, s = int(t[0]), int(t[1]), float(t[2])
       else: h, m, s = 0, 0, str(t)
       return timer_template%(
-         name.ljust(20),
-         '%2d'%h if h != 0 else '--',
+         name[:20].ljust(20),
+         status[:7].ljust(7),
+         '%3d'%h if h != 0 else ' --',
          '%2d'%m if m != 0 else '--',
          '%.6f'%s if isinstance(s, float) else s
       )
@@ -96,24 +97,25 @@ class ProgramList(object):
       tmp = '*  %s  *'
       debug.log(
          '',
-         '* '*24,
-         tmp%(' '*41),
-         tmp%('%s %s'%('Program Name'.ljust(20), 'Execute Time (H:M:S)')),
-         tmp%('='*41)
+         '* '*29,
+         tmp%(' '*51),
+         tmp%('%s  %s  %s'%('Program Name'.ljust(20), 'Status'.ljust(7), 'Execute Time (H:M:S)')),
+         tmp%('='*51)
       )
       for name in self.list:
          if self.exists(name):
             timer = getattr(self, name).get_time()
+            status = getattr(self, name).get_status()
             self.timer -= timer
-            debug.log(tmp%(self.return_timer(name, timer)))
+            debug.log(tmp%(self.return_timer(name, status, timer)))
          else:
-            debug.log(tmp%("%s  -- : -- : --"%(name)))
+            debug.log(tmp%("%s  %s -- : -- : --"%(name[:20].ljust(20),'  '*8)))
       debug.log(
-         tmp%(self.return_timer('Wrapper', self.timer)),
-         tmp%('='*41),
-         tmp%(self.return_timer('Total', total_time)),
-         tmp%(' '*41),
-         '* '*24,
+         tmp%(self.return_timer('Wrapper', '', self.timer)),
+         tmp%('='*51),
+         tmp%(self.return_timer('Total', '', total_time)),
+         tmp%(' '*51),
+         '* '*29,
          ''
       )
 
