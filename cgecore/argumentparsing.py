@@ -87,7 +87,7 @@ def check_file_type(files):
    else:
       if isinstance(files, str): files = [files]
    for file_ in files:
-      debug.log('Checking file type: %s\n'%file_)
+      debug.log('Checking file type: %s'%file_)
       # Check if file is empty
       if os.stat(file_).st_size == 0: continue
       else: all_are_empty = False
