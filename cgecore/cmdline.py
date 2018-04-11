@@ -303,7 +303,7 @@ class Program:
             self.p = Popen(cmd) # shell=True, executable="/bin/bash"
          self.update_timer(time()) # TIME END
          debug.log("timed: %s" % (self.get_time()))
-   def wait(self, pattern='Done', interval=30,
+   def wait(self, pattern='Done', interval=None,
               epatterns=['error','Error','STACK','Traceback']):
       """ This function will wait on a given pattern being shown on the last
           line of a given outputfile.
@@ -316,6 +316,10 @@ class Program:
          epatterns      - A list of string patterns to recognise when a program
                           has finished with an error.
       """
+      increasing_interval = False
+      if interval is None:
+         increasing_interval = True
+         interval = 10
       if self.wdir != '':
          stderr = "%s/%s"%(self.wdir, self.stderr)
       else:
@@ -334,34 +338,38 @@ class Program:
             # Set maximum amount of seconds to wait on the errorlog creation,
             # before assuming queue failure.
             max_queued_time = 10800
-            # calculate max loops left based on set walltime and check interval
-            max_loops_left = self.walltime * 60 * 60 / interval
             while ( not os.path.exists(stderr)
                   and time()+self.timer < max_queued_time
                   and time()+self.timer > 0
                   ):
                debug.log("      Waiting... (max wait time left: %s seconds)"%(
                   str(max_queued_time-time()-self.timer)))
-               sleep(10)
+               sleep(interval)
+               if increasing_interval:
+                  interval *= 1.1
+            
             if os.path.exists(stderr):
+               if increasing_interval:
+                  interval = 10
                # File created looking for pattern
                debug.log('\nError log created, waiting for program to finish...')
-               while max_loops_left > 0:
+            # calculate max loops left based on set walltime and check interval
+               max_time = time() + self.walltime * 60 * 60
+               while time() < max_time:
                   with open_(stderr) as f:
                      for l in f.readlines()[-5:]: # last five lines
                         if pattern in l:
                            found = True
-                           max_loops_left = 0
+                           max_time = 0
                            break
                         elif any([ep in l for ep in epatterns]):
                            found = False
-                           max_loops_left = 0
+                           max_time = 0
                            break
-                  if max_loops_left > 1:
+                  if max_time > 0:
                      debug.log('      Waiting... (max wait-time left: %s seconds)'%(
-                              str(max_loops_left*interval)))
+                              str(max_time-time())))
                      sleep(interval)
-                  max_loops_left -= 1
                if found:
                   debug.log("   Program finished successfully!")
                   self.status = 'Done'
@@ -411,11 +419,9 @@ class Program:
                      for l in f.readlines()[-5:]: # last five lines
                         if pattern in l:
                            found = True
-                           max_loops_left = 0
                            break
                         elif any([ep in l for ep in epatterns]):
                            found = False
-                           max_loops_left = 0
                            break
                   if found:
                      debug.log("   Program finished successfully!")
