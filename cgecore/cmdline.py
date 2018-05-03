@@ -74,18 +74,19 @@ class ProgramList(object):
    def exists(self, name):
       ''' Checks whether the program exists in the program list. '''
       return name in dir(self)
-   def return_timer(self, name, timer):
+   def return_timer(self, name, status, timer):
       ''' Return a text formatted timer '''
-      timer_template = '%s  %s : %s : %9s'
+      timer_template = '%s  %s  %s : %s : %9s'
       t = str(timedelta(0, timer)).split(',')[-1].strip().split(':')
       #t = str(timedelta(0, timer)).split(':')
       if len(t) == 4:
-         d, h, m, s = int(t[0]), int(t[1]), int(t[2]), float(t[3])
+         h, m, s = int(t[0])*24 + int(t[1]), int(t[2]), float(t[3])
       elif len(t) == 3: h, m, s = int(t[0]), int(t[1]), float(t[2])
       else: h, m, s = 0, 0, str(t)
       return timer_template%(
-         name.ljust(20),
-         '%2d'%h if h != 0 else '--',
+         name[:20].ljust(20),
+         status[:7].ljust(7),
+         '%3d'%h if h != 0 else ' --',
          '%2d'%m if m != 0 else '--',
          '%.6f'%s if isinstance(s, float) else s
       )
@@ -96,24 +97,25 @@ class ProgramList(object):
       tmp = '*  %s  *'
       debug.log(
          '',
-         '* '*24,
-         tmp%(' '*41),
-         tmp%('%s %s'%('Program Name'.ljust(20), 'Execute Time (H:M:S)')),
-         tmp%('='*41)
+         '* '*29,
+         tmp%(' '*51),
+         tmp%('%s  %s  %s'%('Program Name'.ljust(20), 'Status'.ljust(7), 'Execute Time (H:M:S)')),
+         tmp%('='*51)
       )
       for name in self.list:
          if self.exists(name):
             timer = getattr(self, name).get_time()
+            status = getattr(self, name).get_status()
             self.timer -= timer
-            debug.log(tmp%(self.return_timer(name, timer)))
+            debug.log(tmp%(self.return_timer(name, status, timer)))
          else:
-            debug.log(tmp%("%s  -- : -- : --"%(name)))
+            debug.log(tmp%("%s  %s -- : -- : --"%(name[:20].ljust(20),'  '*8)))
       debug.log(
-         tmp%(self.return_timer('Wrapper', self.timer)),
-         tmp%('='*41),
-         tmp%(self.return_timer('Total', total_time)),
-         tmp%(' '*41),
-         '* '*24,
+         tmp%(self.return_timer('Wrapper', '', self.timer)),
+         tmp%('='*51),
+         tmp%(self.return_timer('Total', '', total_time)),
+         tmp%(' '*51),
+         '* '*29,
          ''
       )
 
@@ -301,7 +303,7 @@ class Program:
             self.p = Popen(cmd) # shell=True, executable="/bin/bash"
          self.update_timer(time()) # TIME END
          debug.log("timed: %s" % (self.get_time()))
-   def wait(self, pattern='Done', interval=30,
+   def wait(self, pattern='Done', interval=None,
               epatterns=['error','Error','STACK','Traceback']):
       """ This function will wait on a given pattern being shown on the last
           line of a given outputfile.
@@ -314,6 +316,10 @@ class Program:
          epatterns      - A list of string patterns to recognise when a program
                           has finished with an error.
       """
+      increasing_interval = False
+      if interval is None:
+         increasing_interval = True
+         interval = 10
       if self.wdir != '':
          stderr = "%s/%s"%(self.wdir, self.stderr)
       else:
@@ -332,34 +338,38 @@ class Program:
             # Set maximum amount of seconds to wait on the errorlog creation,
             # before assuming queue failure.
             max_queued_time = 10800
-            # calculate max loops left based on set walltime and check interval
-            max_loops_left = self.walltime * 60 * 60 / interval
             while ( not os.path.exists(stderr)
                   and time()+self.timer < max_queued_time
                   and time()+self.timer > 0
                   ):
                debug.log("      Waiting... (max wait time left: %s seconds)"%(
                   str(max_queued_time-time()-self.timer)))
-               sleep(10)
+               sleep(interval)
+               if increasing_interval:
+                  interval *= 1.1
+            
             if os.path.exists(stderr):
+               if increasing_interval:
+                  interval = 10
                # File created looking for pattern
                debug.log('\nError log created, waiting for program to finish...')
-               while max_loops_left > 0:
+            # calculate max loops left based on set walltime and check interval
+               max_time = time() + self.walltime * 60 * 60
+               while time() < max_time:
                   with open_(stderr) as f:
                      for l in f.readlines()[-5:]: # last five lines
                         if pattern in l:
                            found = True
-                           max_loops_left = 0
+                           max_time = 0
                            break
                         elif any([ep in l for ep in epatterns]):
                            found = False
-                           max_loops_left = 0
+                           max_time = 0
                            break
-                  if max_loops_left > 1:
+                  if max_time > 0:
                      debug.log('      Waiting... (max wait-time left: %s seconds)'%(
-                              str(max_loops_left*interval)))
+                              str(max_time-time())))
                      sleep(interval)
-                  max_loops_left -= 1
                if found:
                   debug.log("   Program finished successfully!")
                   self.status = 'Done'
@@ -409,11 +419,9 @@ class Program:
                      for l in f.readlines()[-5:]: # last five lines
                         if pattern in l:
                            found = True
-                           max_loops_left = 0
                            break
                         elif any([ep in l for ep in epatterns]):
                            found = False
-                           max_loops_left = 0
                            break
                   if found:
                      debug.log("   Program finished successfully!")
