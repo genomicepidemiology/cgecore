@@ -181,7 +181,7 @@ class Program:
       """ This function returns the amount of time used by the program
           (in seconds).
       """
-      debug.log('status (%s): %s\n'%(self.name, self.status))
+      # debug.log('status (%s): %s\n'%(self.name, self.status))
       return self.status
    def get_cmd(self):
       """ This function combines and return the commanline call of the program.
