@@ -271,8 +271,7 @@ def Blaster(inputfile, databases, db_path, out_path='.', min_cov=0.6,
                pass
       
       # If the hit does not cover the entire database reference the missing seqence data are extracted
-      keys = gene_results.keys()
-      for hit_id in keys:
+      for hit_id in gene_results:
          hit = gene_results[hit_id]
          
          # Calculate possible split gene coverage
@@ -345,8 +344,7 @@ def compare_results(save, best_hsp, tmp_results, tmp_gene_split):
    
    # See if the best HSP fragment overlap with another allignment and keep the
    # allignment with the highest score - if the new fragment is not providing new seqeunce
-   keys = tmp_results.keys()
-   for hit in keys:
+   for hit in tmp_results:
       hit_data = tmp_results[hit]
       old_start_query = hit_data['query_start']
       old_end_query = hit_data['query_end']
