@@ -41,6 +41,7 @@ class Blaster():
          cmd = ("%s -subject %s -query %s -out %s -outfmt '5'"
                 " -perc_identity %s -dust 'no'" % (blast, db_file, inputfile,
                                                    out_file, threshold))
+
          process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
          out, err = process.communicate()
