@@ -18,5 +18,5 @@ setup(
    author='Martin Thomsen',
    author_email='mcft@bioinformatics.dtu.dk',
    url="https://bitbucket.org/genomicepidemiology/cge_core_module",
-   packages=['cgecore']
+   packages=['cgecore', 'cgecore.blaster']
 )
