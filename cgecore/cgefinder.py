@@ -77,8 +77,6 @@ class CGEFinder():
             align_filename = kma_outfile + ".aln"
             res_filename = kma_outfile + ".res"
 
-            print("# DEBUG cgefinder ln 74: kma cmd: " + kma_cmd)
-
             # If .res file exists then skip mapping
             if(os.path.exists(res_filename)):
                 print("Found " + res_filename + " skipping DB.")
