@@ -1,4 +1,4 @@
-#!/home/data1/tools/bin/anaconda/bin/python
+#!/usr/bin/env python3
 from __future__ import division
 import sys
 import os
@@ -15,7 +15,7 @@ import collections
 
 class Blaster():
    def __init__(self, inputfile, databases, db_path, out_path='', min_cov=0.6,
-                threshold=0.9, blast='blastn', cut_off=True):
+                threshold=0.9, blast='blastn', cut_off=True, max_target_seqs=50000):
 
       min_cov = 100 * float(min_cov)
       threshold = 100 * float(threshold)
@@ -39,8 +39,9 @@ class Blaster():
 
          # Running blast
          cmd = ("%s -subject %s -query %s -out %s -outfmt '5'"
-                " -perc_identity %s -dust 'no'" % (blast, db_file, inputfile,
-                                                   out_file, threshold))
+                " -perc_identity  %s -max_target_seqs %s"
+                " -dust 'no'" % (blast, db_file, inputfile,
+                                 out_file, threshold, max_target_seqs))
 
          process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
@@ -108,11 +109,8 @@ class Blaster():
                      perc_coverage = (((int(HSP_length) - int(gaps))
                                        / float(sbjct_length)) * 100)
 
-                     # TODO: What is going on here?
-                     if int(HSP_length) == int(sbjct_length):
-                        cal_score = perc_ident * coverage * 100
-                     else:
-                        cal_score = perc_ident * coverage
+                     # cal_score is later used to select the best hit
+                     cal_score = perc_ident * coverage
 
                      hit_id = "%s:%s..%s:%s:%f" % (contig_name, query_start,
                                                    query_end, sbjct_header,
@@ -129,30 +127,8 @@ class Blaster():
                         sbjct_string = self.reversecomplement(sbjct_string)
                         strand = 1
 
-                     if cut_off is True:
-                        if perc_coverage > 20:
-                           best_hsp = {'evalue': hsp.expect,
-                                       'sbjct_header': sbjct_header,
-                                       'bit': bit,
-                                       'perc_ident': perc_ident,
-                                       'sbjct_length': sbjct_length,
-                                       'sbjct_start': sbjct_start,
-                                       'sbjct_end': sbjct_end,
-                                       'gaps': gaps,
-                                       'query_string': query_string,
-                                       'homo_string': homo_string,
-                                       'sbjct_string': sbjct_string,
-                                       'contig_name': contig_name,
-                                       'query_start': query_start,
-                                       'query_end': query_end,
-                                       'HSP_length': HSP_length,
-                                       'coverage': coverage,
-                                       'cal_score': cal_score,
-                                       'hit_id': hit_id,
-                                       'strand': strand,
-                                       'perc_coverage': perc_coverage,
-                                       }
-                     else:
+                     # Save hit
+                     if (cut_off and perc_coverage > 20) or cut_off == False:
                         best_hsp = {'evalue': hsp.expect,
                                     'sbjct_header': sbjct_header,
                                     'bit': bit,
@@ -174,8 +150,6 @@ class Blaster():
                                     'strand': strand,
                                     'perc_coverage': perc_coverage
                                     }
-                  else:
-                     pass
 
                # Saving the result if any
                if best_hsp:
@@ -194,8 +168,6 @@ class Blaster():
                   # seqeunces it is kept
                   if save == 1:
                      gene_results[hit_id] = best_hsp
-               else:
-                  pass
 
          result_handle.close()
 
@@ -508,7 +480,7 @@ class Blaster():
                else:
                   start_pos = query_end
                   chars = contig[start_pos:]
-                  chars = self.reversecomplement(chars)
+                  chars = Blaster.reversecomplement(chars)
 
                   query_seq = ("-" * (missing - len(chars))
                                + chars + str(query_seq))
