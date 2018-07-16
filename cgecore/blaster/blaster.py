@@ -201,14 +201,17 @@ class Blaster():
                elif hit['coverage'] != 1:
                   # Getting the whole database sequence
                   for seq_record in SeqIO.parse(db_file, "fasta"):
-                     if seq_record.description == hit['sbjct_header']:
-                        self.gene_align_sbjct[db][hit_id] = str(seq_record.seq)
+                     if seq_record.description.replace(" ", "") == hit['sbjct_header'].replace(" ", ""):
+                        start_seq = str(seq_record.seq)[:int(hit["sbjct_start"])-1] 
+                        end_seq = str(seq_record.seq)[int(hit["sbjct_end"]):] 
+                        self.gene_align_sbjct[db][hit_id] = start_seq + hit['sbjct_string'] + end_seq
+                        #self.gene_align_sbjct[db][hit_id] = str(seq_record.seq)
                         break
 
                   # Getting the whole contig to extract extra query seqeunce
                   contig = ''
                   for seq_record in SeqIO.parse(inputfile, "fasta"):
-                     if seq_record.description == hit['contig_name']:
+                     if seq_record.description.replace(" ", "") == hit['contig_name'].replace(" ", ""):
                         contig = str(seq_record.seq)
                         break
 
