@@ -29,7 +29,7 @@ class CGEFinder():
             threshold=0.6, kma_path="cge/kma/kma", sample_name="",
             inputfile_2=None, kma_mrs=None, kma_gapopen=None,
             kma_gapextend=None, kma_penalty=None, kma_reward=None, kma_pm=None,
-            kma_fpm=None):
+            kma_fpm=None, debug=False):
         """
            I expect that there will only be one hit pr gene, but if there are
            more, I assume that the sequence of the hits are the same in the res
@@ -82,6 +82,9 @@ class CGEFinder():
                 print("Found " + res_filename + " skipping DB.")
             else:
                 # Call KMA
+                if(debug):
+                    print("KMA cmd: " + kma_cmd)
+
                 process = subprocess.Popen(kma_cmd, shell=True,
                                            stdout=subprocess.PIPE,
                                            stderr=subprocess.PIPE)
