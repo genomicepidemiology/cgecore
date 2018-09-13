@@ -38,17 +38,28 @@ class Blaster():
          os.chmod(tmp_out_path, 0o775)
 
          # Running blast
-         cmd = ("%s -subject %s -query %s -out %s -outfmt '5'"
-                " -perc_identity  %s -max_target_seqs %s"
-                " -dust 'no'" % (blast, db_file, inputfile,
-                                 out_file, threshold, max_target_seqs))
+         if os.path.isfile(out_file) and os.access(out_file, os.R_OK):
+            print("Found " + out_file + " skipping DB.")
+         else:
+            cmd = ("%s -subject %s -query %s -out %s -outfmt '5'"
+                   " -perc_identity  %s -max_target_seqs %s"
+                   " -dust 'no'" % (blast, db_file, inputfile,
+                                    out_file, threshold, max_target_seqs))
 
-         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-         out, err = process.communicate()
+            out, err = process.communicate()
 
          # Getting the results
-         result_handle = open(out_file, "r")
+
+         try:
+             result_handle = open(out_file, "r")
+         except IOError as error:
+             sys.exit("Error: BLAST did not run as expected.\n" +
+                      "BLAST finished with the following response:" +
+                      "\n{}\n{}".format(out.decode("utf-8"),
+                                        err.decode("utf-8")))
+
          blast_records = NCBIXML.parse(result_handle)
 
          # Declaring variables for saving the results
