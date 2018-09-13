@@ -78,7 +78,7 @@ class CGEFinder():
             res_filename = kma_outfile + ".res"
 
             # If .res file exists then skip mapping
-            if(os.path.exists(res_filename)):
+            if os.path.isfile(res_filename) and os.access(res_filename, os.R_OK):
                 print("Found " + res_filename + " skipping DB.")
             else:
                 # Call KMA
@@ -92,16 +92,15 @@ class CGEFinder():
 
             kma_results[db] = 'No hit found'
 
+            # Open res file
             try:
                 res_file = open(res_filename, "r")
                 header = res_file.readline()
-            except IOError:
-                sys.exit("Error: KMA did not run as expected.\nKMA finished with the following response:\n{}\n{}".format(out.decode("utf-8"),err.decode("utf-8")))
-
-
-            # Open res file, find coverage and the gene names of genes found
-            #with open(res_filename, "r") as res_file:
-            #    header = res_file.readline()
+            except IOError as error:
+                sys.exit("Error: KMA did not run as expected.\n" +
+                         "KMA finished with the following response:" +
+                         "\n{}\n{}".format(out.decode("utf-8"),
+                                           err.decode("utf-8")))
 
             for line in res_file:
 
@@ -116,7 +115,10 @@ class CGEFinder():
                 sbjct_len = int(data[3])
                 sbjct_ident = float(data[4])
                 coverage = float(data[5])
+                depth = float(data[-3])
                 q_value = float(data[-2])
+                p_value = float(data[-1])
+
 
                 if gene not in kma_results[db]:
                     hit = gene
@@ -146,6 +148,8 @@ class CGEFinder():
                 kma_results[db][hit]["contig_name"] = "NA"
                 kma_results[db][hit]["HSP_length"] = ""
                 kma_results[db][hit]["cal_score"] = q_value
+                kma_results[db][hit]["depth"] = depth
+                kma_results[db][hit]["p_value"] = p_value
             res_file.close()
 
 
