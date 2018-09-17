@@ -25,11 +25,11 @@ class CGEFinder():
     TYPE_KMA = "kma"
 
     @staticmethod
-    def kma(inputfile_1, out_path, databases, db_path_kma, min_cov=0.9,
-            threshold=0.6, kma_path="cge/kma/kma", sample_name="",
+    def kma(inputfile_1, out_path, databases, db_path_kma, min_cov=0.6,
+            threshold=0.9, kma_path="cge/kma/kma", sample_name="",
             inputfile_2=None, kma_mrs=None, kma_gapopen=None,
             kma_gapextend=None, kma_penalty=None, kma_reward=None, kma_pm=None,
-            kma_fpm=None, debug=False):
+            kma_fpm=None, kma_memmode=False, kma_nanopore=False, debug=False):
         """
            I expect that there will only be one hit pr gene, but if there are
            more, I assume that the sequence of the hits are the same in the res
@@ -72,6 +72,11 @@ class CGEFinder():
                 kma_cmd += " -pm " + kma_pm
             if(kma_fpm is not None):
                 kma_cmd += " -fpm " + kma_fpm
+            if (kma_memmode):
+                kma_cmd += " -mem_mode "
+            if (kma_nanopore):
+                kma_cmd += " -bcNano "
+                kma_cmd += " -mp 20 "
 
             # kma output files
             align_filename = kma_outfile + ".aln"
