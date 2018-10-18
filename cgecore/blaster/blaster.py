@@ -15,7 +15,8 @@ import collections
 
 class Blaster():
    def __init__(self, inputfile, databases, db_path, out_path='', min_cov=0.6,
-                threshold=0.9, blast='blastn', cut_off=True, max_target_seqs=50000):
+                threshold=0.9, blast='blastn', cut_off=True,
+                max_target_seqs=50000, reuse_results=False):
 
       min_cov = 100 * float(min_cov)
       threshold = 100 * float(threshold)
@@ -38,8 +39,10 @@ class Blaster():
          os.chmod(tmp_out_path, 0o775)
 
          # Running blast
-         if os.path.isfile(out_file) and os.access(out_file, os.R_OK):
+         if (os.path.isfile(out_file) and os.access(out_file, os.R_OK)
+             and reuse_results):
             print("Found " + out_file + " skipping DB.")
+            out, err = (b'', b'')
          else:
             cmd = ("%s -subject %s -query %s -out %s -outfmt '5'"
                    " -perc_identity  %s -max_target_seqs %s"
@@ -50,16 +53,28 @@ class Blaster():
                                     stderr=subprocess.PIPE)
             out, err = process.communicate()
 
-         # Getting the results
-
+         # Get results file
          try:
+             # Test if output file exist
              result_handle = open(out_file, "r")
-         except IOError as error:
-             sys.exit("Error: BLAST did not run as expected.\n" +
-                      "BLAST finished with the following response:" +
-                      "\n{}\n{}".format(out.decode("utf-8"),
-                                        err.decode("utf-8")))
+         except IOError:
+             sys.exit(("Error: BLAST did not run as expected. " +
+                       "The expected output file, {}, did not exist.\n" +
+                       "BLAST finished with the following response:" +
+                       "\n{}\n{}").format(os.path.abspath(out_file),
+                                          out.decode("utf-8"),
+                                          err.decode("utf-8")))
 
+         # Test if blast output is empty
+         if os.stat(out_file).st_size == 0:
+             sys.exit(("Error: BLAST did not run as expected. " +
+                       "The output file {} was empty.\n" +
+                       "BLAST finished with the following response:" +
+                       "\n{}\n{}").format(os.path.abspath(out_file),
+                                          out.decode("utf-8"),
+                                          err.decode("utf-8")))
+
+         # Get blast output
          blast_records = NCBIXML.parse(result_handle)
 
          # Declaring variables for saving the results
