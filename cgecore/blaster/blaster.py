@@ -345,9 +345,9 @@ class Blaster():
          # kept
          if new_contig == old_contig:
             # Check if saved hits overlaps with current hit
-            overlap_len = ((old_end_query - old_start_query)
+            overlap_len = (((old_end_query - old_start_query)
                            + (new_end_query - new_start_query))
-                           - ((max(old_end_query, new_end_query)
+                           - (max(old_end_query, new_end_query)
                               - min(old_start_query, new_start_query)))
 
             if overlap_len < allowed_overlap:
