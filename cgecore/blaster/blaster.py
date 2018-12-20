@@ -16,7 +16,8 @@ import collections
 class Blaster():
    def __init__(self, inputfile, databases, db_path, out_path='', min_cov=0.6,
                 threshold=0.9, blast='blastn', cut_off=True,
-                max_target_seqs=50000, reuse_results=False):
+                max_target_seqs=50000, reuse_results=False,
+                allowed_overlap=0):
 
       min_cov = 100 * float(min_cov)
       threshold = 100 * float(threshold)
@@ -188,7 +189,8 @@ class Blaster():
 
                      # Compare the hit results
                      save, gene_split, gene_results = self.compare_results(
-                         save, best_hsp, tmp_results, tmp_gene_split)
+                         save, best_hsp, tmp_results, tmp_gene_split,
+                         allowed_overlap)
 
                   # If the hit is not overlapping with other hit
                   # seqeunces it is kept
@@ -266,7 +268,8 @@ class Blaster():
       return seq.translate(trans)[::-1]
 
    @staticmethod
-   def compare_results(save, best_hsp, tmp_results, tmp_gene_split):
+   def compare_results(save, best_hsp, tmp_results, tmp_gene_split,
+                       allowed_overlap):
       """
          Function for comparing hits and saving only the best hit
       """
@@ -341,8 +344,16 @@ class Blaster():
          # sequnce but match different genes only the best hit is
          # kept
          if new_contig == old_contig:
+            # Check if saved hits overlaps with current hit
+            overlap_len = ((old_end_query - old_start_query)
+                           + (new_end_query - new_start_query))
+                           - ((max(old_end_query, new_end_query)
+                              - min(old_start_query, new_start_query)))
 
-            # if the two hits cover the exact same place on the
+            if overlap_len < allowed_overlap:
+                continue
+
+            # If the two hits cover the exact same place on the
             # contig only the percentage of identity is compared
             if(old_start_query == new_start_query
                and old_end_query == new_end_query):
@@ -376,16 +387,15 @@ class Blaster():
                      del tmp_gene_split[new_db_hit][hit_id]
                   break
 
+            # If new hit overlaps with the saved hit
             elif((max(old_end_query, new_end_query)
                   - min(old_start_query, new_start_query))
                  <= ((old_end_query - old_start_query)
                      + (new_end_query - new_start_query))):
 
                if new_score > old_score:
-
                   # Set to remove old gene
                   remove_old = 1
-
                   # Save a split if the new hit still creats one
                   if(new_db_hit in tmp_gene_split
                      and hit_id not in tmp_gene_split[new_db_hit]):
@@ -393,15 +403,31 @@ class Blaster():
                      tmp_gene_split[new_db_hit][hit_id] = 1
 
                elif new_score == old_score:
-
-                  # If both genes are completly covered the longest
-                  # hit is chosen
-                  if(int(best_hsp['perc_coverage']) == 100
-                     and int(hit_data['perc_coverage']) == 100
-                     and new_HSP > old_HSP):
+                  # If both genes are of same coverage
+                  # and identity is the same implyed by new_score == old_score
+                  # hit is chosen based on length
+                  if((int(best_hsp['perc_coverage']) ==
+                      int(hit_data['perc_coverage']))
+                      and new_HSP > old_HSP):
 
                      # Set to remove old gene
                      remove_old = 1
+                  elif((int(best_hsp['perc_coverage']) ==
+                        int(hit_data['perc_coverage']))
+                        and old_HSP > new_HSP):
+
+                     # Remove current hit
+                     save = 0
+                  elif((int(best_hsp['perc_coverage']) ==
+                        int(hit_data['perc_coverage']))
+                        and old_HSP==new_HSP):
+                     #Both hits has same coverage, and same identity
+                     # and same length, how to choose only one hit?
+                     pass
+
+                  # TODO
+                  # If new_score == old_score but identity and coverages are not the same.
+                  # which gene should be chosen?? Now they are both keept.
 
                   # Save a split if the new hit creats one - both
                   # hits are saved
