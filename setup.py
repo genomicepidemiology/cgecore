@@ -10,13 +10,13 @@ with open("cgecore/__init__.py", 'r') as f:
             version = l.split('=')[1].strip().strip('"')
 
 setup(
-   name='cgecore',
-   version=version,
-   description='Center for Genomic Epidemiology Core Module',
-   long_description=long_description,
-   license="Apache License, Version 2.0",
-   author='Center for Genomic Epidemiology',
-   author_email='cgehelp@cbs.dtu.dk',
-   url="https://bitbucket.org/genomicepidemiology/cge_core_module",
-   packages=['cgecore', 'cgecore.blaster', 'cgecore.organisminfo']
+    name='cgecore',
+    version=version,
+    description='Center for Genomic Epidemiology Core Module',
+    long_description=long_description,
+    license="Apache License, Version 2.0",
+    author='Center for Genomic Epidemiology',
+    author_email='cgehelp@cbs.dtu.dk',
+    url="https://bitbucket.org/genomicepidemiology/cge_core_module",
+    packages=['cgecore', 'cgecore.blaster', 'cgecore.organisminfo']
 )
