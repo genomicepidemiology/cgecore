@@ -19,4 +19,8 @@ python2 setup.py install
 python3 setup.py install
 
 # Distribute to PyPi
-python setup.py sdist upload -r pypi
+python3 setup.py sdist bdist_wheel
+twine upload dist/*
+
+*deprecated:*
+~~python setup.py sdist upload -r pypi~~
