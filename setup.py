@@ -18,5 +18,6 @@ setup(
     author='Center for Genomic Epidemiology',
     author_email='cgehelp@cbs.dtu.dk',
     url="https://bitbucket.org/genomicepidemiology/cge_core_module",
-    packages=['cgecore', 'cgecore.blaster', 'cgecore.organisminfo']
+    packages=['cgecore', 'cgecore.blaster', 'cgecore.organisminfo'],
+    package_data={'cgecore.organisminfo': '*.txt'},
 )
