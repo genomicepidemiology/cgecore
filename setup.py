@@ -15,8 +15,8 @@ setup(
    description='Center for Genomic Epidemiology Core Module',
    long_description=long_description,
    license="Apache License, Version 2.0",
-   author='Martin Thomsen',
-   author_email='mcft@bioinformatics.dtu.dk',
+   author='Center for Genomic Epidemiology',
+   author_email='cgehelp@cbs.dtu.dk',
    url="https://bitbucket.org/genomicepidemiology/cge_core_module",
-   packages=['cgecore', 'cgecore.blaster']
+   packages=['cgecore', 'cgecore.blaster', 'cgecore.organisminfo']
 )
