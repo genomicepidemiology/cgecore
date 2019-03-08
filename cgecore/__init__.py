@@ -13,7 +13,7 @@ from .argumentparsing import (check_file_type, get_arguments, get_string,
                               )
 
 #####################
-__version__ = "1.4.2"
+__version__ = "1.4.3"
 __all__ = [
     "argumentparsing",
     "cmdline",
