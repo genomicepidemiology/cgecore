@@ -8,6 +8,10 @@ import sys
 # from cge.blaster.blaster import Blaster
 
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
 class FinderResult():
     def __init__(self, results, align_sbjct=None, align_query=None,
                  align_homo=None):
@@ -86,12 +90,13 @@ class CGEFinder():
             res_filename = kma_outfile + ".res"
 
             # If .res file exists then skip mapping
-            if os.path.isfile(res_filename) and os.access(res_filename, os.R_OK):
-                print("Found " + res_filename + " skipping DB.")
+            if(os.path.isfile(res_filename)
+               and os.access(res_filename, os.R_OK)):
+                eprint("Found " + res_filename + " skipping DB.")
             else:
                 # Call KMA
                 if(debug):
-                    print("KMA cmd: " + kma_cmd)
+                    eprint("KMA cmd: " + kma_cmd)
 
                 process = subprocess.Popen(kma_cmd, shell=True,
                                            stdout=subprocess.PIPE,
@@ -105,8 +110,8 @@ class CGEFinder():
                 res_file = open(res_filename, "r")
                 header = res_file.readline()
             except IOError as error:
-                sys.exit("Error: KMA did not run as expected.\n" +
-                         "KMA finished with the following response:" +
+                sys.exit("Error: KMA did not run as expected.\n"
+                         "KMA finished with the following response:"
                          "\n{}\n{}".format(out.decode("utf-8"),
                                            err.decode("utf-8")))
 
@@ -126,7 +131,6 @@ class CGEFinder():
                 depth = float(data[-3])
                 q_value = float(data[-2])
                 p_value = float(data[-1])
-
 
                 if gene not in kma_results[db]:
                     hit = gene
@@ -159,7 +163,6 @@ class CGEFinder():
                 kma_results[db][hit]["depth"] = depth
                 kma_results[db][hit]["p_value"] = p_value
             res_file.close()
-
 
             if kma_results[db] == 'No hit found':
                 continue
@@ -234,8 +237,8 @@ class CGEFinder():
 
                 # Count gaps in the alignment
                 kma_results[db][hit]["gaps"] = (
-                    kma_results[db][hit]['sbjct_string'].count("-") +
-                    kma_results[db][hit]['query_string'].count("-"))
+                    kma_results[db][hit]['sbjct_string'].count("-")
+                    + kma_results[db][hit]['query_string'].count("-"))
 
                 # Save sequences covering the entire subject sequence
                 # in seperate variables
