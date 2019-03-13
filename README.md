@@ -16,10 +16,12 @@ https://pypi.org/project/cgecore/
 
 # Install package locally
 python2 setup.py install
+
 python3 setup.py install
 
 # Distribute to PyPi
 python3 setup.py sdist bdist_wheel
+
 twine upload dist/*
 
 *deprecated:*
