@@ -258,7 +258,7 @@ class Program:
                         'else echo "Done" >> {stderr}; fi\n').format(
                   stderr=self.stderr))
             f.write('exit $ec\n')
-         os.chmod(script, 0o744)
+         os.chmod(script, 0o755)
          
          if self.queue is not None:
             # Setup execution of shell script through TORQUE
