@@ -36,6 +36,11 @@ parser.add_argument("-t", "--threshold", dest="threshold",
                     help="Blast threshold for identity",
                     type=float,
                     default=0.90)
+parser.add_argument("--overlap",
+                    help=("Allow hits/genes to overlap with this number of "
+                          "nucleotides. Default: 30."),
+                    type=int,
+                    default=30)
 
 args = parser.parse_args()
 
@@ -94,7 +99,8 @@ for inp_file in input_list:
    # Calling blast and parsing output
    blast_run = Blaster(inputfile=inp_file, databases=databases,
                        db_path=db_path, out_path=out_path, min_cov=min_cov,
-                       threshold=threshold, blast=blast)
+                       threshold=threshold, blast=blast,
+                       allowed_overlap=args.overlap)
 
    results = blast_run.results
    query_align = blast_run.gene_align_query

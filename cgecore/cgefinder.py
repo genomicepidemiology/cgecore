@@ -32,9 +32,9 @@ class CGEFinder():
     def kma(inputfile_1, out_path, databases, db_path_kma, min_cov=0.6,
             threshold=0.9, kma_path="cge/kma/kma", sample_name="",
             inputfile_2=None, kma_mrs=None, kma_gapopen=None,
-            kma_gapextend=None, kma_penalty=None, kma_reward=None, kma_pm=None,
-            kma_fpm=None, kma_memmode=False, kma_nanopore=False, debug=False,
-            kma_add_args=None):
+            kma_gapextend=None, kma_penalty=None, kma_reward=None,
+            kma_apm=None, kma_memmode=False, kma_nanopore=False, debug=False,
+            kma_add_args=None, kma_cge=False, kma_1t1=False):
         """
            I expect that there will only be one hit pr gene, but if there are
            more, I assume that the sequence of the hits are the same in the res
@@ -73,10 +73,12 @@ class CGEFinder():
                 kma_cmd += " -penalty " + str(kma_penalty)
             if(kma_reward is not None):
                 kma_cmd += " -reward " + str(kma_reward)
-            if(kma_pm is not None):
-                kma_cmd += " -pm " + kma_pm
-            if(kma_fpm is not None):
-                kma_cmd += " -fpm " + kma_fpm
+            if(kma_apm is not None):
+                kma_cmd += " -apm " + kma_apm
+            if(kma_cge):
+                kma_cmd += " -cge "
+            if(kma_1t1):
+                kma_cmd += " -1t1 "
             if (kma_memmode):
                 kma_cmd += " -mem_mode "
             if (kma_nanopore):
