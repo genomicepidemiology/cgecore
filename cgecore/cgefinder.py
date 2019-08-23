@@ -36,9 +36,28 @@ class CGEFinder():
             kma_apm=None, kma_memmode=False, kma_nanopore=False, debug=False,
             kma_add_args=None, kma_cge=False, kma_1t1=False):
         """
-           I expect that there will only be one hit pr gene, but if there are
+           TODO: Result storage - Too complex. Not effective.
+           Before changing code: Check downstream dependencies of results
+                                 dicts.
+           Currently the code stores results in four different dicts. This can
+           be reduced to just one.
+           The main dict that stores all results currently stores one result pr
+           hit, and distiguishes hits to the same gene by adding an increasing
+           integer (obtained by getting the length of the internal gene dict).
+           The main dict also stores an internal dict for each 'gene'
+           containing an empty dict for each hit.
+           Solution: Create a main<dict> -> gene<list> -> hit<dict> design, and
+           remove all the references main -> hit. This reduces redundancy and
+           the need for manipulating gene names with an incremental integer.
+
+           TODO: Method too many responsibilities
+           Solution: Create KMA class, create additional functions.
+
+           Original comment:
+           "I expect that there will only be one hit pr gene, but if there are
            more, I assume that the sequence of the hits are the same in the res
-           file and the aln file.
+           file and the aln file."
+           Not sure if this holds for the current code.
         """
         threshold = threshold * 100
         min_cov = min_cov * 100
@@ -117,15 +136,23 @@ class CGEFinder():
                          "\n{}\n{}".format(out.decode("utf-8"),
                                            err.decode("utf-8")))
 
+            gene_res_count = {}
+
             for line in res_file:
 
                 if kma_results[db] == 'No hit found':
                     kma_results[db] = dict()
-                    # kma_results[db]["excluded"] = dict()
-                    # continue
 
                 data = [data.strip() for data in line.split("\t")]
                 gene = data[0]
+
+                gene_count = gene_res_count.get(gene, 0)
+                gene_count = gene_count + 1
+                gene_res_count[gene] = gene_count
+                if(gene_count == 1):
+                    hit = gene
+                else:
+                    hit = "{}_{}".format(gene, gene_count)
 
                 sbjct_len = int(data[3])
                 sbjct_ident = float(data[4])
@@ -134,11 +161,6 @@ class CGEFinder():
                 q_value = float(data[-2])
                 p_value = float(data[-1])
 
-                if gene not in kma_results[db]:
-                    hit = gene
-                else:
-                    hit = gene + "_" + str(len(kma_results[db][gene]) + 1)
-
                 exclude_reasons = []
 
                 if(coverage < min_cov or sbjct_ident < threshold):
@@ -146,7 +168,6 @@ class CGEFinder():
                     exclude_reasons.append(sbjct_ident)
 
                 if(exclude_reasons):
-                    # kma_results[db]["excluded"][hit] = exclude_reasons
                     kma_results["excluded"][hit] = exclude_reasons
 
                 kma_results[db][hit] = dict()
@@ -171,7 +192,7 @@ class CGEFinder():
 
             # Open align file
             with open(align_filename, "r") as align_file:
-                hit_no = dict()
+                gene_aln_count = {}
                 gene = ""
                 # Parse through alignments
                 for line in align_file:
@@ -183,17 +204,13 @@ class CGEFinder():
                     if line.startswith("#"):
                         gene = line[1:].strip()
 
-                        if gene not in hit_no:
-                            hit_no[gene] = str(1)
-                        else:
-                            hit_no[gene] += str(int(hit_no[gene]) + 1)
-
+                        gene_count = gene_aln_count.get(gene, 0)
+                        gene_aln_count[gene] = gene_count + 1
                     else:
-                        # Check if gene one of the user specified genes
-                        if hit_no[gene] == '1':
+                        if(gene_aln_count[gene] == 1):
                             hit = gene
                         else:
-                            hit = gene + "_" + hit_no[gene]
+                            hit = "{}_{}".format(gene, gene_aln_count[gene])
 
                         if hit in kma_results[db]:
                             line_data = line.split("\t")[-1].strip()
@@ -209,7 +226,7 @@ class CGEFinder():
                         else:
                             print(hit + " not in results: ", kma_results)
 
-            # concatinate all sequences lists and find subject start
+            # concatinate all sequence lists and find subject start
             # and subject end
 
             gene_align_sbjct[db] = {}
@@ -217,8 +234,6 @@ class CGEFinder():
             gene_align_homo[db] = {}
 
             for hit in kma_results[db]:
-                # if(hit == "excluded"):
-                # continue
                 align_sbjct = "".join(kma_results[db][hit]['sbjct_string'])
                 align_query = "".join(kma_results[db][hit]['query_string'])
                 align_homo = "".join(kma_results[db][hit]['homo_string'])
