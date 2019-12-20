@@ -98,7 +98,6 @@ class Blaster():
 
             # Parsing over the hits and only keeping the best
             for blast_record in blast_records:
-
                 # OLD CODE TO BE REMOVED
                 #  query = blast_record.query
                 #  blast_record.alignments.sort(key=lambda align: (
@@ -113,7 +112,6 @@ class Blaster():
                     key=lambda align: (max((int(hsp.identities)
                                            for hsp in align.hsps))),
                     reverse=True)
-
                 query = blast_record.query
 
                 for alignment in blast_record.alignments:
@@ -121,13 +119,13 @@ class Blaster():
                     # HSP fragment
                     best_e_value = 1
                     best_bit = 0
+                    start_hsp = 0
+                    end_hsp = 0
 
                     for hsp in alignment.hsps:
-
                         if hsp.expect < best_e_value or hsp.bits > best_bit:
-                            best_e_value = hsp.expect
-                            best_bit = hsp.bits
-
+                            # best_e_value = hsp.expect
+                            # best_bit = hsp.bits
                             tmp = alignment.title.split(" ")
                             sbjct_header = tmp[1]
                             # DEBUG
@@ -158,7 +156,6 @@ class Blaster():
                             hit_id = "%s:%s..%s:%s:%f" % (
                                 contig_name, query_start, query_end,
                                 sbjct_header, cal_score)
-
                             # If the hit is on the other strand
                             if sbjct_start > sbjct_end:
                                 tmp = sbjct_start
@@ -198,29 +195,30 @@ class Blaster():
                                             'perc_coverage': perc_coverage
                                             }
 
-                    # Saving the result if any
-                    if best_hsp:
-                        save = 1
 
-                        # If there are other gene alignments they are compared
-                        if gene_results:
-                            tmp_gene_split = gene_split
-                            tmp_results = gene_results
 
-                            # Compare the hit results
-                            save, gene_split, gene_results = (
-                                self.compare_results(save, best_hsp,
-                                                     tmp_results,
-                                                     tmp_gene_split,
-                                                     allowed_overlap)
-                            )
+                        # Saving the result if any
+                        if best_hsp:
+                            save = 1
 
-                        # If the hit is not overlapping with other hit
-                        # seqeunces it is kept
-                        if save == 1:
-                            # DEBUG
-                            print("Saving: {}".format(hit_id))
-                            gene_results[hit_id] = best_hsp
+                            # If there are other gene alignments they are compared
+                            if gene_results:
+                                tmp_gene_split = gene_split
+                                tmp_results = gene_results
+                                # Compare the hit results
+                                save, gene_split, gene_results = (
+                                    self.compare_results(save, best_hsp,
+                                                         tmp_results,
+                                                         tmp_gene_split,
+                                                         allowed_overlap)
+                                )
+
+                            # If the hit is not overlapping with other hit
+                            # seqeunces it is kept
+                            if save == 1:
+                                # DEBUG
+                                print("Saving: {}".format(hit_id))
+                                gene_results[hit_id] = best_hsp
 
             result_handle.close()
 
@@ -326,15 +324,23 @@ class Blaster():
             old_HSP = hit_data['HSP_length']
 
             remove_old = 0
-
             # If they align to the same gene in the database they are
             # compared
             if new_db_hit == old_db_hit:
 
-                # If the hit provids additional sequence it is kept and
+                #If the hit comes from different contig
+                if old_contig != new_contig:
+
+                    # Save a split if the new hit still creats one
+                    if(new_db_hit in tmp_gene_split
+                       and hit_id not in tmp_gene_split[new_db_hit]):
+
+                        tmp_gene_split[new_db_hit][hit_id] = 1
+
+                # If the hit provides additional sequence it is kept and
                 # the new coverage is saved otherwise the one with the
                 # highest score is kept
-                if(new_start_sbjct < old_start_sbjct
+                elif(new_start_sbjct < old_start_sbjct
                    or new_end_sbjct > old_end_sbjct):
 
                     # Save the hits as split
@@ -342,28 +348,29 @@ class Blaster():
                     if hit not in tmp_gene_split[old_db_hit]:
                         tmp_gene_split[old_db_hit][hit] = 1
 
-                else:
-                    if new_score > old_score:
+
+#                else:
+#                    if new_score > old_score:
                         # Set to remove old hit
-                        remove_old = 1
+#                        remove_old = 1
 
                         # Save a split if the new hit still creats one
-                        if(new_db_hit in tmp_gene_split
-                           and hit_id not in tmp_gene_split[new_db_hit]):
+#                        if(new_db_hit in tmp_gene_split
+#                           and hit_id not in tmp_gene_split[new_db_hit]):
 
-                            tmp_gene_split[new_db_hit][hit_id] = 1
-                    else:
-                        save = 0
+#                            tmp_gene_split[new_db_hit][hit_id] = 1
+#                    else:
+#                        save = 0
 
                         # If the old and new hit is not identical the
                         # possible saved gene split for the new hit is
                         # removed
-                        if hit_id != hit:
-                            if(new_db_hit in tmp_gene_split
-                               and hit_id in tmp_gene_split[new_db_hit]):
+#                        if hit_id != hit:
+#                            if(new_db_hit in tmp_gene_split
+#                               and hit_id in tmp_gene_split[new_db_hit]):
 
-                                del tmp_gene_split[new_db_hit][hit_id]
-                        break
+#                                del tmp_gene_split[new_db_hit][hit_id]
+#                        break
 
             # If the hits comes form the same part of the contig
             # sequnce but match different genes only the best hit is
