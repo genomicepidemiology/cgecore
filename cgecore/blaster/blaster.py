@@ -194,31 +194,32 @@ class Blaster():
                                             'strand': strand,
                                             'perc_coverage': perc_coverage
                                             }
+                            else:
+                                best_hsp={}
+                                continue
 
+                    # Saving the result if any
+                    if best_hsp:
+                        save = 1
 
+                        # If there are other gene alignments they are compared
+                        if gene_results:
+                            tmp_gene_split = gene_split
+                            tmp_results = gene_results
+                            # Compare the hit results
+                            save, gene_split, gene_results = (
+                                self.compare_results(save, best_hsp,
+                                                     tmp_results,
+                                                     tmp_gene_split,
+                                                     allowed_overlap)
+                            )
 
-                        # Saving the result if any
-                        if best_hsp:
-                            save = 1
-
-                            # If there are other gene alignments they are compared
-                            if gene_results:
-                                tmp_gene_split = gene_split
-                                tmp_results = gene_results
-                                # Compare the hit results
-                                save, gene_split, gene_results = (
-                                    self.compare_results(save, best_hsp,
-                                                         tmp_results,
-                                                         tmp_gene_split,
-                                                         allowed_overlap)
-                                )
-
-                            # If the hit is not overlapping with other hit
-                            # seqeunces it is kept
-                            if save == 1:
-                                # DEBUG
-                                print("Saving: {}".format(hit_id))
-                                gene_results[hit_id] = best_hsp
+                        # If the hit is not overlapping with other hit
+                        # seqeunces it is kept
+                        if save == 1:
+                            # DEBUG
+                            print("Saving: {}".format(hit_id))
+                            gene_results[hit_id] = best_hsp
 
             result_handle.close()
 
@@ -463,7 +464,7 @@ class Blaster():
 
                         # TODO
                         # If new_score == old_score but identity and coverages are not the same.
-                        # which gene should be chosen?? Now they are both keept.
+                        # which gene should be chosen?? Now they are both kept.
 
                         # Save a split if the new hit creats one - both
                         # hits are saved
