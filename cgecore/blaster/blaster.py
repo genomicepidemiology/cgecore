@@ -194,6 +194,8 @@ class Blaster():
                                             'strand': strand,
                                             'perc_coverage': perc_coverage
                                             }
+                            else:
+                                continue
 
 
 
