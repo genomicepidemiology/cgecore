@@ -6,6 +6,8 @@ import time
 import random
 import re
 import subprocess
+import gzip
+import shutil
 
 from Bio.Blast import NCBIXML
 from Bio import SeqIO
@@ -31,13 +33,24 @@ class Blaster():
         # TODO: Add excluded results to this dictionay
         self.results["excluded"] = dict()
 
+        # Create temporary directory
+        tmp_out_path = "%s/tmp" % (out_path)
+        os.makedirs(tmp_out_path, exist_ok=True)
+
+        # Unzip inputfile to temporary if it has .gz
+        if inputfile[-3:] == ".gz":
+            unzipped_fname = "%s/%s"%(
+                    tmp_out_path, 
+                    inputfile.split('/')[-1][:-3])
+            with gzip.open(inputfile) as f_in:
+                with open(unzipped_fname, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+            inputfile = unzipped_fname
+
         for db in databases:
             # Adding the path to the database and output
             db_file = "%s/%s.fsa" % (db_path, db)
-            tmp_out_path = "%s/tmp" % (out_path)
             out_file = "%s/out_%s.xml" % (tmp_out_path, db)
-            os.makedirs(tmp_out_path, exist_ok=True)
-            os.chmod(tmp_out_path, 0o775)
 
             # Running blast
             if (os.path.isfile(out_file)
