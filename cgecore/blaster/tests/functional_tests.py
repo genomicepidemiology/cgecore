@@ -19,7 +19,7 @@ test_data = {
     # Test hit to test_db01
     test_names[0]: root_test_dir + "/data/test_isolate_01.fa",
     test_names[1]: root_test_dir + "/data/test_db_01.fa",
-    test_names[2]: root_test_dir + "/data/test_isolate_01.fa",
+    test_names[2]: root_test_dir + "/data/test_isolate_01.fa.gz",
     test_names[3]: root_test_dir + "/data/test_db_01.fa",
 }
 working_dir = os.path.dirname(os.path.realpath(__file__))
@@ -66,6 +66,7 @@ class ResFinderRunTest(unittest.TestCase):
 
         in_dirs, in_filename = os.path.split(test_data[test_names[0]])
         in_name, ext = os.path.splitext(in_filename)
+        if ext == "gz": in_name, ext = os.path.splitext(in_name)
 
         out_aln = test_dir + "/" + in_name + "_hit_alignments.txt"
         out_res = test_dir + "/" + in_name + "_results.txt"
