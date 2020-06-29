@@ -34,23 +34,25 @@ class Blaster():
         self.results["excluded"] = dict()
 
         # Create temporary directory
-        tmp_out_path = "%s/tmp" % (out_path)
-        os.makedirs(tmp_out_path, exist_ok=True)
+        tmp_path = os.path.join(out_path,"tmp")
+        os.makedirs(tmp_path, exist_ok=True)
 
-        # Unzip inputfile to temporary if it has .gz
-        if inputfile[-3:] == ".gz":
-            unzipped_fname = "%s/%s"%(
-                    tmp_out_path, 
-                    inputfile.split('/')[-1][:-3])
-            with gzip.open(inputfile) as f_in:
-                with open(unzipped_fname, "wb") as f_out:
+        # Ungzip inputfile if it has .gz
+        in_dirs, in_name = os.path.split(inputfile)
+        in_base, in_ext = os.path.splitext(in_name)
+        if in_ext == ".gz":
+            unz_name = os.path.join(tmp_path, in_base)
+            with gzip.open(inputfile, mode='rb') as f_in:
+                with open(unz_name, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
-            inputfile = unzipped_fname
+            inputfile = unz_name
 
         for db in databases:
+
             # Adding the path to the database and output
-            db_file = "%s/%s.fsa" % (db_path, db)
-            out_file = "%s/out_%s.xml" % (tmp_out_path, db)
+            # TODO the ".fsa" extension requirement should go
+            db_file = os.path.join(db_path, "%s.fsa" % db)
+            out_file = os.path.join(tmp_path, "out_%s.xml" % db)
 
             # Running blast
             if (os.path.isfile(out_file)
