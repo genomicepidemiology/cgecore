@@ -57,6 +57,7 @@ class ResFinderRunTest(unittest.TestCase):
                + " --out_path " + out_path
                + " --blastPath " + blast
                + " --databasePath " + db_path
+               + " --keep_tmp"
                + " --min_cov 0.6"
                + " --threshold 0.8")
 

@@ -8,6 +8,7 @@ import re
 import subprocess
 import gzip
 import shutil
+import tempfile
 
 from Bio.Blast import NCBIXML
 from Bio import SeqIO
@@ -19,7 +20,7 @@ class Blaster():
     def __init__(self, inputfile, databases, db_path, out_path='', min_cov=0.6,
                  threshold=0.9, blast='blastn', cut_off=True,
                  max_target_seqs=50000, reuse_results=False,
-                 allowed_overlap=0):
+                 allowed_overlap=0, keep_tmp=False):
 
         min_cov = 100 * float(min_cov)
         threshold = 100 * float(threshold)
@@ -33,9 +34,13 @@ class Blaster():
         # TODO: Add excluded results to this dictionay
         self.results["excluded"] = dict()
 
-        # Create temporary directory
-        tmp_path = os.path.join(out_path,"tmp")
-        os.makedirs(tmp_path, exist_ok=True)
+        # Create persistent tmp dir when explicitly requested
+        if keep_tmp:
+            tmp_path = os.path.join(out_path,"tmp")
+            os.makedirs(tmp_path, exist_ok=True)
+        else: # by default use OS-managed tmpfile facilities
+            tmp_dir = tempfile.TemporaryDirectory()
+            tmp_path = tmp_dir.name
 
         # Ungzip inputfile if it has .gz
         in_dirs, in_name = os.path.split(inputfile)
@@ -300,6 +305,10 @@ class Blaster():
                 self.results[db] = gene_results
             else:
                 self.results[db] = "No hit found"
+
+        # Explicit tmp cleanup prevents audit message
+        if not keep_tmp:
+            tmp_dir.cleanup()
 
     @staticmethod
     def reversecomplement(seq):
