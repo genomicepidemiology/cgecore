@@ -41,6 +41,8 @@ parser.add_argument("--overlap",
                           "nucleotides. Default: 30."),
                     type=int,
                     default=30)
+parser.add_argument("--keep_tmp", help="Keep temporary files",
+                    default=False, action='store_true')
 
 args = parser.parse_args()
 
@@ -100,7 +102,7 @@ for inp_file in input_list:
    blast_run = Blaster(inputfile=inp_file, databases=databases,
                        db_path=db_path, out_path=out_path, min_cov=min_cov,
                        threshold=threshold, blast=blast,
-                       allowed_overlap=args.overlap)
+                       allowed_overlap=args.overlap, keep_tmp=args.keep_tmp)
 
    results = blast_run.results
    query_align = blast_run.gene_align_query
