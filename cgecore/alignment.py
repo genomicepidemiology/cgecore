@@ -128,7 +128,7 @@ def cigar2query(template, cigar):
    return ''.join(query).upper()
 
 def Blaster(inputfile, databases, db_path, out_path='.', min_cov=0.6,
-            threshold=0.9, blast='blastn', cut_off=True):
+            threshold=0.9, blast='blastn', cut_off=True, keep_tmp=False):
    ''' BLAST wrapper method, that takes a simple input and produces a overview
    list of the hits to templates, and their alignments
    
@@ -150,13 +150,19 @@ def Blaster(inputfile, databases, db_path, out_path='.', min_cov=0.6,
    gene_align_homo = dict()  #will contain the sequence alignment homolog string
    gene_align_sbjct = dict() #will contain the sequence alignment allele string
    results = dict()          #will contain the results
-   
+
+   # Create persistent tmp dir when explicitly requested
+   if keep_tmp:
+      tmp_path = os.path.join(out_path,"tmp")
+      os.makedirs(tmp_path, exist_ok=True)
+   else: # by default use OS-managed tmpfile facilities
+      tmp_dir = tempfile.TemporaryDirectory()
+      tmp_path = tmp_dir.name
+
    for db in databases:
       # Adding the path to the database and output
       db_file = "%s/%s.fsa"%(db_path, db)
-      os.system("mkdir -p %s/tmp"%(out_path))
-      os.system("chmod 775 %s/tmp"%(out_path))
-      out_file = "%s/tmp/out_%s.xml"%(out_path, db)
+      out_file = os.path.join(tmp_path, "out_%s.xml"%(db))
       
       # Running blast
       cmd = "%s -subject %s -query %s -out %s -outfmt '5' -perc_identity %s -dust 'no'"%(blast, db_file, inputfile, out_file, threshold)
@@ -322,6 +328,11 @@ def Blaster(inputfile, databases, db_path, out_path='.', min_cov=0.6,
          results[db] = gene_results
       else:
          results[db] = "No hit found"
+
+   # Explicit tmp cleanup prevents audit message
+   if not keep_tmp:
+      tmp_dir.cleanup()
+
    return (results, gene_align_query, gene_align_homo, gene_align_sbjct)
 
 trans = maketrans("AGCT","TCGA")
