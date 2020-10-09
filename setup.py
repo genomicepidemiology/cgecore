@@ -14,13 +14,13 @@ except ImportError:
 with open("README.md", 'r') as f:
     long_description = f.read()
 
-with open("cgecore2/__init__.py", 'r') as f:
+with open("cge2/__init__.py", 'r') as f:
     for l in f:
         if l.startswith('__version__'):
             version = l.split('=')[1].strip().strip('"')
 
 setup(
-    name='cgecore2',
+    name='cge2',
     version=version,
     description='Center for Genomic Epidemiology Core Module',
     long_description=long_description,
@@ -28,5 +28,5 @@ setup(
     author='Center for Genomic Epidemiology',
     author_email='food-cgehelp@dtu.dk',
     url="https://bitbucket.org/genomicepidemiology/cge_core_module/src/2.0",
-    packages=['cgecore2'],
+    packages=['cge2'],
 )
