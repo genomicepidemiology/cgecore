@@ -1,0 +1,30 @@
+>>> from result import Result, ResultParser
+>>> from exceptions import CGECoreOutTypeError, CGECoreOutInputError
+
+### Test Result
+>>> try:
+...    Result()
+... except CGECoreOutTypeError as e:
+...    print(e.message)
+The class format requires a 'type' attribute. The given dictionary contained the following attributes: dict_keys([])
+
+>>> try:
+...    Result(result_type="some_type", **{"type": "another_type"})
+... except CGECoreOutTypeError as e:
+...    print(e.message)
+Type was given as argument to method call and as an attribute in the given dictionary, but they did not match. some_type (method) != another_type (dict)
+
+>>> try:
+...    Result(result_type="some_type")
+... except CGECoreOutTypeError as e:
+...    print(e.message[0:49])
+Unknown result type given. Type given: some_type.
+
+>>> res = Result(**{"type": "software_result"})
+>>> res.val_parsers["char64"]("54d762f5aacbd706457d109d520e3c550feb8df"
+...                           "edc4f0d8ccae1ad203e3388c0")
+
+>>> from valueparsers import ValueParsers
+>>> from parserdict import ParserDict
+>>> custom_parser = ValueParsers
+>>> res2 = Result(parsers=custom_parser, **{"type": "software_result"})
