@@ -14,7 +14,7 @@ class Result(dict):
     beone_json_path = os.path.join(os.path.dirname(__file__), TEMPLATE_DIR,
                                    BEONE_JSON_FILE)
 
-    def __init__(self, result_type=None, fmt_file=beone_json_path,
+    def __init__(self, type, fmt_file=beone_json_path,
                  parsers=None, **kwargs):
 
         self.defs = {}
@@ -26,7 +26,6 @@ class Result(dict):
         else:
             self.val_parsers = ParserDict(parsers)
 
-        type = self._get_type(result_type, **kwargs)
         self._set_type(type)
         self._parser = ResultParser(result_def=self.defs[type])
         for d in self._parser.arrays:
@@ -44,35 +43,14 @@ class Result(dict):
                 "Unknown result type given. Type given: {}. Type must be one "
                 "of:\n{}".format(type, list(self.defs.keys())))
 
-    def _get_type(self, result_type=None, **kwargs):
-        type = None
-        if(result_type is not None):
-            type = result_type
-        if(kwargs):
-            kw_type = kwargs.get("type", None)
-            if(type is not None and kw_type is not None and type != kw_type):
-                raise CGECoreOutTypeError(
-                    "Type was given as argument to method call and as an "
-                    "attribute in the given dictionary, but they did not "
-                    "match. {} (method) != {} (dict)".format(type, kw_type))
-            elif(kw_type is not None):
-                type = kw_type
-        if(type is None):
-            raise CGECoreOutTypeError(
-                "The class format requires a 'type' attribute. The given "
-                "dictionary contained the following attributes: {}"
-                .format(kwargs.keys()))
-        return type
-
     def add(self, **kwargs):
         for key, val in kwargs.items():
             if(val is None):
                 continue
             self[key] = val
 
-    def add_class(self, cl, result_type=None, **kwargs):
-        type = self._get_type(result_type, **kwargs)
-        res = Result(result_type=type, **kwargs)
+    def add_class(self, cl, type, **kwargs):
+        res = Result(type=type, **kwargs)
         if(cl in self._parser.arrays):
             self[cl].append(res)
         elif(cl in self._parser.dicts):
@@ -170,7 +148,7 @@ class Result(dict):
 class ResultParser(dict):
     """"""
     def __init__(self, result_def):
-        self.classes = set()
+        # self.classes = set()
         self.arrays = {}
         self.dicts = {}
 

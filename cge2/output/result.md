@@ -1,5 +1,4 @@
-Result class test
-=================
+# Result class test
 
 ```python
 
@@ -8,15 +7,16 @@ Result class test
 
 ```
 
-Usage
------
+## Usage
+
+### Initialize Result class
 
 A Result object can be initialized using a dict containing many key-value pairs.
 The "type" key is always mandatory, but other key-values depend on the given
 template.
 ```python
 
->>> res = Result(**{"type": "software_result"})
+>>> res = Result(type="software_result", **{"key1": "val1", "key2": "val2"})
 >>> res.val_parsers["char64"]("54d762f5aacbd706457d109d520e3c550feb8df"
 ...                           "edc4f0d8ccae1ad203e3388c0")
 
@@ -30,7 +30,61 @@ class.
 
 >>> from valueparsers import ValueParsers
 >>> custom_parser = ValueParsers
->>> res2 = Result(parsers=custom_parser, **{"type": "software_result"})
+>>> res = Result(parsers=custom_parser, **{"type": "software_result"})
+
+```
+
+### Initialize ResultParser class
+
+An instance of the Result class loads the json template(s) provided and stores
+them in a dict. Each template class is a dict within the dict, and the key is
+the class "type".
+
+For each template class an instance of ResultParser is created.
+
+A ResultParser instance is created to hold the definition of a single template
+class. The test below uses a previously loaded Result object and provides a dict
+from within a dict as argument to ResultParser.
+
+ResultParser is a dict that holds all the definitions from the template class.
+Furthermore it detects which values are dictionaries and which values are lists.
+It removes the "dict" or "array" part and stores only the rest of the value. But
+keeps two dictionaries named "dicts" and "arrays" with the key-value pairs in
+order to determine if the value of the key is expected to be a list or a
+dictionary.
+Values that are not dictionaries or list are not stored in specific
+dictionaries, but just in the "root" dictionary.
+
+```python
+
+>>> res_parser1 = ResultParser(result_def=res.defs["software_result"])
+>>> res_parser1["type"]
+'software_result'
+>>> res_parser1["databases"]
+'database:class'
+>>> res_parser1.dicts["databases"]
+'database:class'
+>>> "databases" in res_parser1.dicts
+True
+>>> "databases" in res_parser1.arrays
+False
+>>> res_parser2 = ResultParser(result_def=res.defs["gene"])
+>>> res_parser2["type"]
+'gene'
+>>> res_parser2.arrays["phenotypes"]
+'phenotype.key'
+
+```
+
+### Methods
+```python
+
+>>> res.add(**{"key1": "val1", "key2": "val2", "key3": None})
+>>> res["key1"]
+'val1'
+>>> res["key3"]
+Traceback (most recent call last):
+KeyError: 'key3'
 
 ```
 
@@ -43,23 +97,7 @@ Result must be initialized with a "type". Otherwise an exception is thrown.
 >>> res = Result()
 ... #doctest: +NORMALIZE_WHITESPACE
 Traceback (most recent call last):
-exceptions.CGECoreOutTypeError:
-    The class format requires a 'type' attribute. The given dictionary contained
-    the following attributes: dict_keys([])
-
-```
-
-The "type" can be provided as an argument named "result_type" and/or "type". If
-both are provided, they must match, or an exception is thrown.
-```python
-
->>> res = Result(result_type="some_type", **{"type": "another_type"})
-... #doctest: +NORMALIZE_WHITESPACE
-Traceback (most recent call last):
-exceptions.CGECoreOutTypeError:
-    Type was given as argument to method call and as an attribute in the given
-    dictionary, but they did not match. some_type (method) != another_type
-    (dict)
+TypeError: __init__() missing 1 required positional argument: 'type'
 
 ```
 
@@ -69,7 +107,7 @@ types of the given json is listed. In the test the exact types has been left out
 and replaced with "...".
 ```python
 
->>> res = Result(result_type="some_type")
+>>> res = Result(type="some_type")
 ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 Traceback (most recent call last):
 exceptions.CGECoreOutTypeError:

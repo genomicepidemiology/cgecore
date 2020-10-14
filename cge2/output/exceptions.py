@@ -11,7 +11,7 @@ class CGECoreOut(Exception):
 
 class CGECoreOutTypeError(CGECoreOut):
     """ Raised when the 'type' specified is not defined in the json
-        definition, if it is missing.
+        definition.
     """
     def __init__(self, message, *args):
         self.message = message
