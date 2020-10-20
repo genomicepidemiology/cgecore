@@ -77,6 +77,17 @@ False
 ```
 
 ### Methods
+
+#### Result.add(**kwargs)
+
+Stores key value pairs in result object, where both key and value are single
+values. Not lists or dictionaries. The method is designed to store several key
+value pairs with a single call provided a dictionary of pairs.  
+- Keys with 'None' values are ignored.
+- Values that does not adhere to the template definition is stored without any
+warnings, errors or exceptions. Failure to comply with definitions are found
+using the method Result.check_results.
+
 ```python
 
 >>> res.add(**{"key1": "val1", "key2": "val2", "key3": None})
@@ -88,8 +99,52 @@ KeyError: 'key3'
 
 ```
 
-Exceptions
-----------
+#### Result.add_class(cl, type, **kwargs)
+
+Used to store a Result object within the Result object. Results can be stored in
+either dictionaries or arrays, this is defined by the json template and stored
+in the ResultParser object within the Result object.  
+**cl**: Name and key of Result object to store.
+**type**: Type of the Result object to store.
+**kwargs**: Dictionary of key value pairs to be content of of the Result object
+to store.
+- Results stored in a dictionary must contain a key named 'key'.
+- Results must be one of the valid types provided in the json template.
+```python
+
+>>> res.add_class(cl="phenotypes", type="phenotype",
+...               **{"key": "phen", "key2": "val2"})
+>>> res.add_class(cl="phenotypes", type="phenotype",
+...               **{"key1": "phen", "key2": "val2"})
+Traceback (most recent call last):
+KeyError: 'key'
+>>> res.add_class(cl="phenotypes", type=None,
+...               **{"key": "phen", "key2": "val2"})
+... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+Traceback (most recent call last):
+exceptions.CGECoreOutTypeError: Unknown result type given. Type given: None.
+                                Type must be one of: [...]
+
+```
+
+### Private Methods
+
+#### Result._set_type(*type*)
+
+Set *type* of Result object if it is valid. If not, throw exception:
+CGECoreOutTypeError.
+```python
+
+>>> res._set_type(type="Not valid type")
+... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+Traceback (most recent call last):
+exceptions.CGECoreOutTypeError: Unknown result type given. Type given: Not valid
+                                type. Type must be one of: [...]
+>>> res._set_type("software_result")
+
+```
+
+## Exceptions
 
 Result must be initialized with a "type". Otherwise an exception is thrown.
 ```python

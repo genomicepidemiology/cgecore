@@ -55,6 +55,7 @@ class Result(dict):
             self[cl].append(res)
         elif(cl in self._parser.dicts):
             self[cl][res["key"]] = res
+#TODO DESCRIBE THISM LAST OPTION
         else:
             self[cl] = res
 
