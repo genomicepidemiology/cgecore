@@ -1,4 +1,4 @@
-from cge2.applications.command import _OptionArgument, CommandLineBase
+from cge2.applications.command import _ContentArgument, CommandLineBase
 from cge2.applications.command import _SwitchArgument, _SwitchValueArgument
 from cge2.applications.KMA import _KmaBaseCommandline
 
@@ -13,383 +13,396 @@ class KMACommandline(_KmaBaseCommandline):
         assert cmd is not None
         self.parameters = [
             # Input query options:
-            # THIS IS wrong. Need allowing double files
-            _OptionArgument(
-                ["-query", None, "query"],
-                "The sequence to search with.",
+            _ContentArgument(
+                ["-i", "input"],
+                "Input file name(s)",
                 filename=True,
-                equate=False,
+                is_required=True,
+                default="STDIN",
+                alter_options=["input_int", "input_ipe"],
+                incompatible=["input_int", "input_ipe"],
+                allow_multiple=True,
+            ),
+            _ContentArgument(
+                ["-ipe", "input_ipe"],
+                "Input paired end file name(s)",
+                filename=True,
+                is_required=True,
+                alter_options=["input", "input_int"],
+                incompatible=["input", "input_int"],
+                allow_multiple=True,
+            ),
+            _ContentArgument(
+                ["-int", "input_int"],
+                "Input interleaved file name(s)",
+                filename=True,
+                is_required=True,
+                alter_options=["input", "input_ipe"],
+                incompatible=["input", "input_ipe"],
+                allow_multiple=True,
             ),  # Should this be required?
-            _OptionArgument(
-                ["-o", None, "output"],
+            _ContentArgument(
+                ["-o", "output"],
                 "Output file",
                 filename=True,
                 is_required=True,
-                equate=False,
+                default="None",
             ),
-            _OptionArgument(
-                ["-t_db", None, "TemplateDatabase"],
+            _ContentArgument(
+                ["-t_db", "template_db"],
                 "Template DB",
                 filename=True,
-                equate=False,
+                default="None",
                 is_required=True,
             ),
-            _OptionArgument(
-                ["-k", None, "Kmersize"],
+            _ContentArgument(
+                ["-k", "k_size"],
                 "Kmersize (default by db)",
                 filename=False,
-                equate=False,
+                default="DB defined",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-ml", None, "MinLen"],
+            _ContentArgument(
+                ["-ml", "min_len"],
                 "Minimum alignment length",
                 filename=False,
-                equate=False,
+                default=16,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-p", None, "p-value"],
+            _ContentArgument(
+                ["-p", "p_value"],
                 "p-value",
                 filename=False,
-                equate=False,
+                default=0.05,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-ConClave", None, "ConClaveV"],
+            _ContentArgument(
+                ["-ConClave", "con_clave"],
                 "ConClave version",
                 filename=False,
-                equate=False,
+                default=1,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-mem_mode", None, "MemMode"],
+                ["-mem_mode", "mem_mode"],
                 "Use kmers to choose best template, and save memory",
             ),
             _SwitchValueArgument(
-                ["-proxi", None, "ProximityScore"],
+                ["-proxi", "proxi"],
                 "Use proximity scoring under template mapping",
                 filename=False,
-                equate=False,
+                default="False/1.0",
                 is_required=False,
-                default=1.0,
             ),
             _SwitchArgument(
-                ["-ex_mode", None, "ExhaustiveSearch"],
+                ["-ex_mode", "ex_mode"],
                 "Searh kmers exhaustively",
             ),
             _SwitchArgument(
-                ["-ef", None, "ExtraFiles"],
+                ["-ef", "extra_files"],
                 "Output extra files",
             ),
             _SwitchValueArgument(
-                ["-vcf", None, "VCF"],
+                ["-vcf", "vcf"],
                 "Make vcf file, 2 to apply FT",
                 filename=False,
-                equate=False,
+                default="False/0",
                 is_required=False,
-                default=0,
             ),
             _SwitchValueArgument(
-                ["-sam", None, "SAM"],
+                ["-sam", "sam"],
                 "Output sam to stdout, 4 to output mapped reads,"
                 "2096 for aligned",
                 filename=False,
-                equate=False,
+                default="False/1.0",
                 is_required=False,
-                default=0,
             ),
             _SwitchArgument(
-                ["-nc", None, "NonConsensus"],
+                ["-nc", "non_consensus"],
                 "No consensus file",
             ),
             _SwitchArgument(
-                ["-na", None, "NoAlign"],
+                ["-na", "no_aln"],
                 "No aln file",
             ),
             _SwitchArgument(
-                ["-nf", None, "NoFrag"],
+                ["-nf", "no_frag"],
                 "No frag file",
             ),
             _SwitchArgument(
-                ["-deCon", None, "deCon"],
+                ["-deCon", "deCon"],
                 "Remove contamination",
             ),
             _SwitchArgument(
-                ["-dense", None, "dense"],
+                ["-dense", "dense"],
                 "Do not allow insertions in assembly",
             ),
             _SwitchArgument(
-                ["-sasm", None, "sasm"],
+                ["-sasm", "sasm"],
                 "Skip alignment and assembly",
             ),
             _SwitchValueArgument(
-                ["-ref_fsa", None, "refsa"],
+                ["-ref_fsa", "ref_sa"],
                 "Consensus sequence will have 'n' instead of gaps",
                 filename=False,
-                equate=False,
                 is_required=False,
-                default=0,
+                default="False/0",
             ),
             _SwitchArgument(
-                ["-matrix", None, "Matrix"],
+                ["-matrix", "matrix"],
                 "Outputs assembly matrix",
             ),
             _SwitchArgument(
-                ["-a", None, "BestMapps"],
+                ["-a", "best_maps"],
                 "Print all best mappings",
             ),
-            _OptionArgument(
-                ["-mp", None, "MinPhred"],
+            _ContentArgument(
+                ["-mp", "min_phred"],
                 "Minimum phred score",
                 filename=False,
-                equate=False,
+                default=20,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-5p", None, "Cut5p"],
+            _ContentArgument(
+                ["-5p", "cut_5p"],
                 "Cut a constant number of nucleotides from the 5 prime",
                 filename=False,
-                equate=False,
+                default=0,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-3p", None, "Cut3p"],
+            _ContentArgument(
+                ["-3p", "cut_3p"],
                 "Cut a constant number of nucleotides from the 3 prime",
                 filename=False,
-                equate=False,
+                default=0,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-Sparse", None, "Sparse"],
+                ["-Sparse", "sparse"],
                 "Only count kmers",
             ),
             _SwitchValueArgument(
-                ["-Mt1", None, "MapToTemplate"],
+                ["-Mt1", "Mt1"],
                 "Map only to 'num' template",
                 filename=False,
-                equate=False,
                 is_required=False,
-                default=0,
+                default="False/0",
             ),
-            _OptionArgument(
-                ["-ID", None, "ID"],
+            _ContentArgument(
+                ["-ID", "ID"],
                 "Minimum ID",
                 filename=False,
-                equate=False,
+                default="1.0%",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-ss", None, "Sparsesort"],
+            _ContentArgument(
+                ["-ss", "ss"],
                 "Sparse sorting (q,c,d)",
                 filename=False,
-                equate=False,
+                default="q",
+                checker_function=lambda x: x in ["q", "c", "d"],
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-pm", None, "Pairing"],
+            _ContentArgument(
+                ["-pm", "pm"],
                 "Pairing method (p,u,f)",
                 filename=False,
-                equate=False,
+                default="u",
+                checker_function=lambda x: x in ["p", "u", "f"],
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-fpm", None, "FinePairing"],
+            _ContentArgument(
+                ["-fpm", "fpm"],
                 "Fine Pairing method (p,u,f)",
                 filename=False,
-                equate=False,
+                checker_function=lambda x: x in ["p", "u", "f"],
+                default="u",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-apm", None, "FPM/PM"],
+            _ContentArgument(
+                ["-apm", "apm"],
                 "Sets both pm and fpm (p,u,f)",
                 filename=False,
-                equate=False,
+                default="u",
+                checker_function=lambda x: x in ["p", "u", "f"],
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-shm", None, "SharedDB"],
+            _ContentArgument(
+                ["-shm", "shm"],
                 "Use shared DB made by kma_shm",
                 filename=False,
-                equate=False,
+                default="0 (lvl)",
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-mmap", None, "Memorymap"],
+                ["-mmap", "mmap"],
                 "Memory map *.comp.by",
             ),
-            _OptionArgument(
-                ["-tmp", None, "TmpFolder"],
+            _ContentArgument(
+                ["-tmp", "tmp"],
                 "Set directory for temporary files.",
                 filename=True,
-                equate=False,
-                is_required=False,
-            ),
-            _OptionArgument(
-                ["-tmp", None, "TmpFolder"],
-                "Set directory for temporary files.",
-                filename=True,
-                equate=False,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-1t1", None, "EndMapping"],
+                ["-1t1", "1t1"],
                 "Force end to end mapping"
             ),
             _SwitchArgument(
-                ["-hmm", None, "HMMMapping"],
+                ["-hmm", "hmm"],
                 "Use a HMM to assign template(s) to query sequences"
             ),
             _SwitchArgument(
-                ["-ck", None, "CountK"],
+                ["-ck", "count_k"],
                 "Count kmers instead of pseudo alignment"
             ),
             _SwitchArgument(
-                ["-ca", None, "CircularAln"],
+                ["-ca", "circular_aln"],
                 "Make circular alignments"
             ),
             _SwitchArgument(
-                ["-boot", None, "Bootstrap"],
+                ["-boot", "bootstrap"],
                 "Bootstrap sequence"
             ),
             _SwitchArgument(
-                ["-bc", None, "BaseCalls"],
-                "Base calls should be significantly overrepresented"
+                ["-bc", "bc"],
+                "Base calls should be significantly overrepresented",
+                default=True,
+                incompatible=["bc90"],
             ),
             _SwitchArgument(
-                ["-bc90", None, "BaseCalls90"],
+                ["-bc90", "bc90"],
                 "Base calls should be both significantly overrepresented, and"
-                " have 90% agreement."
+                " have 90% agreement.",
+                incompatible=["bc"]
             ),
             _SwitchArgument(
-                ["-bcNano", None, "BaseCallsNano"],
+                ["-bcNano", "bcNano"],
                 "Call bases at suspicious deletions, made for nanopore."
             ),
-            _OptionArgument(
-                ["-bcd", None, "MinDepth"],
+            _ContentArgument(
+                ["-bcd", "bcd"],
                 "Minimum depth at base.",
                 filename=False,
-                equate=False,
-                is_required=False,
-            ),
-            _OptionArgument(
-                ["-bcg", None, "InsignificantGaps"],
-                "Maintain insignificant gaps",
-                filename=False,
-                equate=False,
+                default=1,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-and", None, "MRS&P_Value"],
+                ["-bcg", "bcg"],
+                "Maintain insignificant gaps",
+            ),
+            _SwitchArgument(
+                ["-and", "and"],
                 "Both mrs and p_value thresholds has to reached to in order "
                 "to	report a template hit.",
             ),
-            _OptionArgument(
-                ["-mq", None, "MinMapQ"],
+            _ContentArgument(
+                ["-mq", "MinMapQ"],
                 "Minimum mapping quality",
                 filename=False,
-                equate=False,
+                default=0,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-mrs", None, "MinAlnQ"],
+            _ContentArgument(
+                ["-mrs", "MinAlnQ"],
                 "Minimum alignment score, normalized to alignment length",
                 filename=False,
-                equate=False,
+                default=0.50,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-mct", None, "MaxOverlapTemp"],
+            _ContentArgument(
+                ["-mct", "mct"],
                 "Max overlap between templates",
                 filename=False,
-                equate=False,
+                default=0.50,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-reward", None, "Reward"],
+            _ContentArgument(
+                ["-reward", "reward"],
                 "Score for match",
                 filename=False,
-                equate=False,
+                default=1,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-penalty", None, "Penalty"],
+            _ContentArgument(
+                ["-penalty", "penalty"],
                 "Penalty for mismatch",
                 filename=False,
-                equate=False,
+                default=-2,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-gapopen", None, "GapOpen"],
+            _ContentArgument(
+                ["-gapopen", "gap_open"],
                 "Penalty for gap opening",
                 filename=False,
-                equate=False,
+                default=-3,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-gapextend", None, "GapExtend"],
+            _ContentArgument(
+                ["-gapextend", "gap_extend"],
                 "Penalty for gap extension",
                 filename=False,
-                equate=False,
+                default=-1,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-per", None, "RewardPairing"],
+            _ContentArgument(
+                ["-per", "reward_pairing"],
                 "Reward for pairing end",
                 filename=False,
-                equate=False,
+                default=7,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-localopen", None, "LocalOpen"],
+            _ContentArgument(
+                ["-localopen", "local_open"],
                 "Penalty for openning a local chain",
                 filename=False,
-                equate=False,
+                default=-6,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-Npenalty", None, "Npenalty"],
+            _ContentArgument(
+                ["-Npenalty", "n_penalty"],
                 "Penalty matching N",
                 filename=False,
-                equate=False,
+                default=0,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-transition", None, "PenTrans"],
+            _ContentArgument(
+                ["-transition", "transition"],
                 "Penalty for transition",
                 filename=False,
-                equate=False,
+                default=-2,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-transversion", None, "PenTransv"],
+            _ContentArgument(
+                ["-transversion", "transversion"],
                 "Penalty for transversion",
                 filename=False,
-                equate=False,
+                default=-2,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-cge", None, "CGESet"],
+                ["-cge", "cge"],
                 "Set CGE penalties and rewards",
             ),
-            _OptionArgument(
-                ["-t", None, "Threads"],
+            _ContentArgument(
+                ["-t", "threads"],
                 "Number of threads",
                 filename=False,
-                equate=False,
+                default=1,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-status", None, "Status"],
+                ["-status", "status"],
                 "Extra status",
             ),
             _SwitchArgument(
-                ["-verbose", None, "Verbose"],
+                ["-verbose", "verbose"],
                 "Extra verbose",
             ),
             _SwitchArgument(
-                ["-c", None, "Citation"],
+                ["-c", "citation"],
                 "Citation",
+                no_run=True,
             ),
         ]
         _KmaBaseCommandline.__init__(self, cmd, **kwargs)
@@ -402,119 +415,123 @@ class KMAIndexCommandline(_KmaBaseCommandline):
 
     def __init__(self, cmd="kma_index", **kwargs):
         assert cmd is not None
-        extra_parameters = [
-            _OptionArgument(
-                ["-i", None, "Input"],
+        self.parameters = [
+            _ContentArgument(
+                ["-i", "input"],
                 "Input/query file name (STDIN: '--')",
                 filename=True,
-                equate=False,
+                default="None",
                 is_required=False,
+                allow_multiple=True,
+                alter_options=["batch"],
+                incompatible=["batch"],
+
             ),
-            _OptionArgument(
-                ["-o", None, "Output"],
+            _ContentArgument(
+                ["-o", "output"],
                 "Output file",
                 filename=False,
-                equate=False,
+                default="Input file",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-batch", None, "Batch"],
+            _ContentArgument(
+                ["-batch", "batch"],
                 "Batch input file",
                 filename=True,
-                equate=False,
                 is_required=False,
+                alter_options=["input"],
+                incompatible=["input"]
             ),
             _SwitchValueArgument(
-                ["-deCon", None, "deCon"],
+                ["-deCon", "deCon"],
                 "File with contamination (STDIN: '--')",
+                default="None/False",
                 filename=True,
-                equate=False,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-batchD", None, "batchD"],
+            _ContentArgument(
+                ["-batchD", "batchD"],
                 "Batch decon file",
                 filename=True,
-                equate=False,
                 is_required=False,
             ),
             _SwitchValueArgument(
-                ["-t_db", None, "AddDB"],
+                ["-t_db", "template_db"],
                 "Add to existing DB",
                 filename=True,
-                equate=False,
+                default="None/False",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-k", None, "kmersize"],
+            _ContentArgument(
+                ["-k", "k_size"],
                 "Kmersize",
                 filename=False,
-                equate=False,
+                default=16,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-k_t", None, "KmerTemp"],
+            _ContentArgument(
+                ["-k_t", "k_temp"],
                 "Kmersize for template identification",
                 filename=False,
-                equate=False,
+                default=16,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-k_i", None, "KmerIndex"],
+            _ContentArgument(
+                ["-k_i", "k_index"],
                 "Kmersize for indexing",
                 filename=False,
-                equate=False,
+                default=16,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-ML", None, "MinLenTemplate"],
+            _ContentArgument(
+                ["-ML", "min_len"],
                 "Minimum length for templates",
                 filename=False,
-                equate=False,
+                default="kmersize (16)",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-CS", None, "StartChainSize"],
+            _ContentArgument(
+                ["-CS", "cs"],
                 "Start chain size",
                 filename=False,
-                equate=False,
+                default="1 M",
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-ME", None, "MegaDB"],
+                ["-ME", "mega_db"],
                 "Mega DB",
             ),
             _SwitchArgument(
-                ["-NI", None, "NoIndex"],
+                ["-NI", "no_index"],
                 "Do not dump *.index.b",
             ),
             _SwitchValueArgument(
-                ["-Sparse", None, "Sparse"],
+                ["-Sparse", "sparse"],
                 "Make Sparse DB ('-' for no prefix)",
                 filename=False,
-                equate=False,
+                default="None/False",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-ht", None, "HomologyTemp"],
+            _ContentArgument(
+                ["-ht", "homology_temp"],
                 "Homology template",
                 filename=False,
-                equate=False,
+                default=1.0,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-hq", None, "HomologyQuery"],
+            _ContentArgument(
+                ["-hq", "homology_query"],
                 "Homology query",
                 filename=False,
-                equate=False,
+                default=1.0,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-and", None, "BothHomology"],
+                ["-and", "and"],
                 "Both homolgy thresholds has to be reached",
             ),
             _SwitchArgument(
-                ["-nbp", None, "NoBias"],
+                ["-nbp", "no_bias"],
                 "No bias print",
             ),
         ]
@@ -529,27 +546,27 @@ class KMAShmCommandline(_KmaBaseCommandline):
 
     def __init__(self, cmd="kma_shm", **kwargs):
         assert cmd is not None
-        extra_parameters = [
-            _OptionArgument(
-                ["-t_db", None, "TemplateDB"],
+        self.parameters = [
+            _ContentArgument(
+                ["-t_db", "template_db"],
                 "Template DB",
                 filename=True,
-                equate=False,
+                default=None,
                 is_required=True,
             ),
             _SwitchArgument(
-                ["-destroy", None, "DestroyShared"],
+                ["-destroy", "destroy"],
                 "Destroy shared memory",
             ),
-            _OptionArgument(
-                ["-shmLvl", None, "LvlSharedMem"],
+            _ContentArgument(
+                ["-shmLvl", "shmLvl"],
                 "Level of shared memory",
                 filename=False,
-                equate=False,
+                default=1,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-shm-h", None, "ExplainLvl"],
+                ["-shm-h", "shm_h"],
                 "Explain of shared memory",
             ),
         ]
@@ -563,16 +580,16 @@ class KMASeq2FastaCommandline(_KmaBaseCommandline):
 
     def __init__(self, cmd="kma seq2fasta", **kwargs):
         assert cmd is not None
-        extra_parameters = [
-            _OptionArgument(
-                ["-t_db", None, "TemplateDB"],
+        self.parameters = [
+            _ContentArgument(
+                ["-t_db", "template_db"],
                 "Template DB",
                 filename=True,
-                equate=False,
+                default=None,
                 is_required=True,
             ),
             _SwitchArgument(
-                ["-seqs", None, "Seqs"],
+                ["-seqs", "seqs"],
                 "Comma separated list of templates",
             ),
         ]
@@ -587,59 +604,60 @@ class KMADistCommandline(_KmaBaseCommandline):
 
     def __init__(self, cmd="kma dist", **kwargs):
         assert cmd is not None
-        extra_parameters = [
-            _OptionArgument(
-                ["-t_db", None, "TemplateDB"],
+        self.parameters = [
+            _ContentArgument(
+                ["-t_db", "template_db"],
                 "Template DB",
                 filename=True,
-                equate=False,
                 is_required=True,
             ),
-            _OptionArgument(
-                ["-o", None, "Output"],
+            _ContentArgument(
+                ["-o", "output"],
                 "Output file",
                 filename=True,
-                equate=False,
+                default="DB",
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-f", None, "OFlags"],
+            _ContentArgument(
+                ["-f", "output_f"],
                 "Output flags",
                 filename=False,
-                equate=False,
+                default=1,
+                checker_function=lambda x: x in [1, 4],
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-fh", None, "HelpFlags"],
+                ["-fh", "help_flags"],
                 "Help on option '-f'",
             ),
-            _OptionArgument(
-                ["-d", None, "DistanceMethod"],
+            _ContentArgument(
+                ["-d", "distance_method"],
                 "DistanceMethod",
                 filename=False,
-                equate=False,
+                checker_function=lambda x: x in [1, 2, 4, 8, 16, 32, 64, 128,
+                                                 256, 512, 1024, 2048, 4096],
+                default=1,
                 is_required=False,
             ),
             _SwitchArgument(
-                ["-dh", None, "HelpDistance"],
+                ["-dh", "help_distance"],
                 "Help on option '-d'",
             ),
             _SwitchArgument(
-                ["-m", None, "DiskAllocate"],
+                ["-m", "matrix"],
                 "Allocate matrix on the disk",
             ),
-            _OptionArgument(
-                ["-tmp", None, "TmpFile"],
+            _ContentArgument(
+                ["-tmp", "tmp"],
                 "Set directory for temporary file",
                 filename=True,
-                equate=False,
                 is_required=False,
             ),
-            _OptionArgument(
-                ["-t", None, "Threads"],
+            _ContentArgument(
+                ["-t", "threads"],
                 "Number of threads",
                 filename=False,
-                equate=False,
+                default=1,
                 is_required=False,
             ),
         ]
@@ -654,12 +672,11 @@ class KMADBCommandline(_KmaBaseCommandline):
 
     def __init__(self, cmd="kma db", **kwargs):
         assert cmd is not None
-        extra_parameters = [
-            _OptionArgument(
-                ["-t_db", None, "TemplateDB"],
+        self.parameters = [
+            _ContentArgument(
+                ["-t_db", "template_db"],
                 "Template DB",
                 filename=True,
-                equate=False,
                 is_required=True,
             ),
         ]

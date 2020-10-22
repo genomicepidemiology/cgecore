@@ -1,7 +1,5 @@
-from cge2.applications.command import _OptionArgument, CommandLineBase
-from cge2.applications.command import _ArgumentBase, _OptionArgument
-from cge2.applications.command import _SwitchArgument, _SwitchValueArgument
-from cge2.applications.command import _Argument, _ArgumentList, _StaticArgument
+from cge2.applications.command import _ContentArgument, CommandLineBase
+from cge2.applications.command import _SwitchArgument
 
 class _KmaBaseCommandline(CommandLineBase):
     """Base Commandline object for KMA wrappers (PRIVATE).
@@ -15,14 +13,21 @@ class _KmaBaseCommandline(CommandLineBase):
         extra_parameters = [
             # Core:
             _SwitchArgument(
-                ["-h", None, "h"],
+                ["-h", "h"],
                 "Print USAGE, DESCRIPTION and ARGUMENTS description; "
-                "ignore other arguments."
+                "ignore other arguments.",
+                no_run=True,
             ),
             _SwitchArgument(
-                ["-v", None, "v"],
+                ["-v", "v"],
                 "Print version number;  "
                 "ignore other arguments.",
+                no_run=True,
+            ),
+            _ContentArgument(
+                ["", "custom_args"],
+                "Add custom arguments that are not included in the "
+                "kma_application.py file."
             ),
         ]
         try:
