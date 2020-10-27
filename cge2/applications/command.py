@@ -64,7 +64,7 @@ class CommandLineBase:
 
     parameters = None  # will be a list defined in subclasses
 
-    def __init__(self, cmd, **kwargs):
+    def __init__(self, cmd, path_exec, **kwargs):
         """Create a new instance of a command line wrapper object."""
         # Init method - should be subclassed!
         #
@@ -83,6 +83,12 @@ class CommandLineBase:
         # The keyword arguments should be any valid parameter name, and will
         # be used to set the associated parameter.
         self.program_name = cmd
+        if path_exec != "":
+            if not os.path.isdir(path_exec):
+                raise OSError("The path %s is not a directory. Point to the "
+                              "directory where the executable is.")
+            path_exec = path_exec + "/"
+        self.path_exec = path_exec
         try:
             parameters = self.parameters
         except AttributeError:
@@ -104,9 +110,6 @@ class CommandLineBase:
                 aliases.add(name)
             name = p.names[-1]
 
-            if name == "custom_args":
-                continue
-                #new_arguments = _custom_arg(p)
             # Beware of binding-versus-assignment confusion issues
             def getter(name):
                 return lambda x: x._get_parameter(name)
@@ -186,7 +189,8 @@ class CommandLineBase:
                 -bsequence=asis:ACCCGAGCGCGGT -gapopen=10 -gapextend=0.5'
         """
         self._validate()
-        commandline = "%s " % _escape_filename(self.program_name)
+        commandline = "%s%s " % (_escape_filename(self.path_exec),
+                                 _escape_filename(self.program_name))
         for parameter in self.parameters:
             if parameter.is_set:
                 # This will include a trailing space:
@@ -210,7 +214,13 @@ class CommandLineBase:
                          bsequence='asis:ACCCGAGCGCGGT',
                          gapopen=10, gapextend=0.5)
         """
-        answer = "%s(cmd=%r" % (self.__class__.__name__, self.program_name)
+        if self.path_exec == "":
+            answer = "%s(cmd=%r" % (self.__class__.__name__,
+                                    self.program_name)
+        else:
+            answer = "%s(cmd=%r, path_executable=%r" % (self.__class__.__name__,
+                                                        self.program_name,
+                                                        self.path_exec)
         for parameter in self.parameters:
             if parameter.is_set:
                 if isinstance(parameter, _SwitchArgument):
@@ -220,35 +230,6 @@ class CommandLineBase:
                                            parameter.value)
         answer += ")"
         return answer
-
-    def _custom_arg(self, parameter):
-        param_value = parameter.value.split(" ")
-        for i in range(len(param_value)):
-            if ":" in param_value[i]:
-                name, value_param = param_value[i].split(":")
-                value, charac = value_param.split("(")
-                charac = charac.replace(")", "")
-                names = [name, name.replace("-", "")]
-                extra_argument = _ContentArgument(names, description="Custom "
-                                                  "argument %s"
-                                                  % name.replace("-", ""),
-                                                  value=value, is_set=True)
-                if charac:
-                    for c in charac.split(";"):
-                        attribute = c.rstrip().split("=")
-                        if len(attribute) != 2:
-                            raise ValueError("Costum option name %s has not "
-                                             "set the extra characteristics in"
-                                             " the correct formatn (use '=')."
-                                             % name)
-                        if attribute[0] == "filename":
-                            extra_argument.filename = attribute[1]
-                        elif attribute[0] == "equate":
-                            extra_argument.equate = attribute[1]
-                        elif attribute[0] == "allow_multiple":
-                            extra_argument.allow_multiple = attribute[1]
-
-
 
     def _get_parameter(self, name):
         """Get a commandline option value (PRIVATE)."""
@@ -355,7 +336,18 @@ class CommandLineBase:
         assumed to be parameters, and passed to the self.set_parameter method
         for validation and assignment.
         """
-        if name in ["parameters", "program_name"]:  # Allowed attributes
+        #if self.path_exec == "":
+        #    if name in ["parameters", "program_name"]:  # Allowed attributes
+        #        self.__dict__[name] = value
+        #    else:
+        #        self.set_parameter(name, value)  # treat as a parameter
+        #else:
+        #    if name in ["parameters", "program_name", "path_exec"]:
+        #        # Allowed attributes
+        #        self.__dict__[name] = value
+        #    else:
+        #        self.set_parameter(name, value)  # treat as a parameter
+        if name in ["parameters", "program_name", "path_exec"]:  # Allowed attributes
             self.__dict__[name] = value
         else:
             self.set_parameter(name, value)  # treat as a parameter

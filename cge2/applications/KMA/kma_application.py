@@ -9,7 +9,7 @@ class KMACommandline(_KmaBaseCommandline):
     common to all the BLAST tools (blastn, rpsblast, rpsblast, etc).
     """
 
-    def __init__(self, cmd="kma", **kwargs):
+    def __init__(self, cmd="kma", path_exec="", **kwargs):
         assert cmd is not None
         self.parameters = [
             # Input query options:
@@ -405,7 +405,7 @@ class KMACommandline(_KmaBaseCommandline):
                 no_run=True,
             ),
         ]
-        _KmaBaseCommandline.__init__(self, cmd, **kwargs)
+        _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)
 
 class KMAIndexCommandline(_KmaBaseCommandline):
     """Base Commandline object for (new) NCBI BLAST+ wrappers (PRIVATE).
@@ -413,7 +413,7 @@ class KMAIndexCommandline(_KmaBaseCommandline):
     common to all the BLAST tools (blastn, rpsblast, rpsblast, etc).
     """
 
-    def __init__(self, cmd="kma_index", **kwargs):
+    def __init__(self, cmd="kma_index", path_exec="", **kwargs):
         assert cmd is not None
         self.parameters = [
             _ContentArgument(
@@ -535,7 +535,7 @@ class KMAIndexCommandline(_KmaBaseCommandline):
                 "No bias print",
             ),
         ]
-        _KmaBaseCommandline.__init__(self, cmd, **kwargs)
+        _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)
 
 
 class KMAShmCommandline(_KmaBaseCommandline):
@@ -544,7 +544,7 @@ class KMAShmCommandline(_KmaBaseCommandline):
     common to all the BLAST tools (blastn, rpsblast, rpsblast, etc).
     """
 
-    def __init__(self, cmd="kma_shm", **kwargs):
+    def __init__(self, cmd="kma_shm", path_exec="", **kwargs):
         assert cmd is not None
         self.parameters = [
             _ContentArgument(
@@ -570,6 +570,8 @@ class KMAShmCommandline(_KmaBaseCommandline):
                 "Explain of shared memory",
             ),
         ]
+        _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)
+
 
 
 class KMASeq2FastaCommandline(_KmaBaseCommandline):
@@ -578,7 +580,7 @@ class KMASeq2FastaCommandline(_KmaBaseCommandline):
     common to all the BLAST tools (blastn, rpsblast, rpsblast, etc).
     """
 
-    def __init__(self, cmd="kma seq2fasta", **kwargs):
+    def __init__(self, cmd="kma seq2fasta", path_exec="", **kwargs):
         assert cmd is not None
         self.parameters = [
             _ContentArgument(
@@ -593,7 +595,7 @@ class KMASeq2FastaCommandline(_KmaBaseCommandline):
                 "Comma separated list of templates",
             ),
         ]
-        _KmaBaseCommandline.__init__(self, cmd, **kwargs)
+        _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)
 
 
 class KMADistCommandline(_KmaBaseCommandline):
@@ -602,7 +604,7 @@ class KMADistCommandline(_KmaBaseCommandline):
     common to all the BLAST tools (blastn, rpsblast, rpsblast, etc).
     """
 
-    def __init__(self, cmd="kma dist", **kwargs):
+    def __init__(self, cmd="kma dist", path_exec="", **kwargs):
         assert cmd is not None
         self.parameters = [
             _ContentArgument(
@@ -661,7 +663,7 @@ class KMADistCommandline(_KmaBaseCommandline):
                 is_required=False,
             ),
         ]
-        _KmaBaseCommandline.__init__(self, cmd, **kwargs)
+        _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)
 
 
 class KMADBCommandline(_KmaBaseCommandline):
@@ -670,7 +672,7 @@ class KMADBCommandline(_KmaBaseCommandline):
     common to all the BLAST tools (blastn, rpsblast, rpsblast, etc).
     """
 
-    def __init__(self, cmd="kma db", **kwargs):
+    def __init__(self, cmd="kma db", path_exec="", **kwargs):
         assert cmd is not None
         self.parameters = [
             _ContentArgument(
@@ -680,4 +682,4 @@ class KMADBCommandline(_KmaBaseCommandline):
                 is_required=True,
             ),
         ]
-        _KmaBaseCommandline.__init__(self, cmd, **kwargs)
+        _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)

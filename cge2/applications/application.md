@@ -2,7 +2,7 @@ Application class test
 =================
 
 
-###Testing of Application error ###
+###Testing of Application error
 ```python3
 >>> from command import ApplicationError
 >>> err = ApplicationError(1, "helloworld", "", "Some error text")
@@ -17,7 +17,7 @@ Non-zero return code 1 from 'helloworld', message 'Some error text'
 Non-zero return code 1 from 'helloworld'
 
 ```
-###Testing of CommandLineBase####
+###Testing of CommandLineBase
 ```python3
 >>> from KMA.kma_application import KMACommandline
 >>> kmaline = KMACommandline(k_size=10, min_len=0.5, sparse=True)
@@ -56,11 +56,32 @@ Traceback (most recent call last):
 ValueError: Parameter input_ipe is set, but the incompatible parameter input has been also set.
 
 >>> del kmaline.input
+>>> kmaline.input_ipe = ["/home2.txt","/home1.txt"]
+>>> str(kmaline)
+'kma -ipe /home2.txt /home1.txt  -o /out/ -t_db /template_db/ -ml 0.5 -Sparse'
+>>> kmaline.path_exec = "/home/alfred/bio_tools/kma/"
+>>> str(kmaline)
+'/home/alfred/bio_tools/kma/kma -ipe /home2.txt /home1.txt  -o /out/ -t_db /template_db/ -ml 0.5 -Sparse'
+>>> del kmaline.input_ipe
+>>> del kmaline.min_len
+>>> del kmaline.sparse
+>>> kmaline.input = ["/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_1.fq","/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_2.fq"]
+>>> kmaline.template_db = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/beta-lactam"
+>>> kmaline.output = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output"
+>>> print(kmaline)
+/home/alfred/bio_tools/kma/kma -i /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_1.fq /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_2.fq  -o /home/alfred/Projects/cge_core_module2/cge2/tests/applications/output -t_db /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/beta-lactam
+>>> std_output, err_output = kmaline()
+>>> print(std_output)
+>>> print(err_output)
 >>> kmaline.sup = 10
 Traceback (most recent call last):
 ...
 ValueError: Option name sup was not found.
->>> kmaline.custom_args = "-sup 10 --MEH -ipe error.txt"
+>>> kmaline.custom_args = "-sup 10 --MEH"
 >>> str(kmaline)
+'/home/alfred/bio_tools/kma/kma  -sup 10 --MEH -i /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_1.fq /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_2.fq  -o /home/alfred/Projects/cge_core_module2/cge2/tests/applications/output -t_db /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/beta-lactam'
+>>> std_output, err_output = kmaline()
+>>> print(std_output)
+>>> print(err_output)
 
 ```
