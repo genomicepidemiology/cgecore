@@ -46,9 +46,9 @@ class Blaster():
                 print("Found " + out_file + " skipping DB.")
                 out, err = (b'', b'')
             else:
-                cmd = ("%s -subject %s -query %s -out %s -outfmt '5'"
+                cmd = ("%s -subject %s -query %s -out %s -outfmt 5"
                        " -perc_identity  %s -max_target_seqs %s"
-                       " -dust 'no'" % (blast, db_file, inputfile,
+                       " -dust no" % (blast, db_file, inputfile,
                                         out_file, threshold, max_target_seqs))
 
                 process = subprocess.Popen(cmd, shell=True,
