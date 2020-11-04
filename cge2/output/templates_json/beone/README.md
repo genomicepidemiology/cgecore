@@ -33,21 +33,22 @@ BeOne example output from ResFinder: [example.json](https://bitbucket.org/genomi
 
 ```
 
-**key**: For CGE tools the key will be <software_name>-<software_version>
+**key**: For CGE tools the key will be <software_name>-<software_version>  
 *Example*: ResFinder-4.1.0
 
-**software_name**: Name of the application creating the output.
+
+**software_name**: Name of the application creating the output.  
 *Example*: "software_name": "ResFinder"
 
 **software_version**: [Semantic Versioning](https://semver.org/). Given a version number MAJOR.MINOR.PATCH. If no version number can be provided,
-the first seven digits of the Git commit checksum is expected here.
+the first seven digits of the Git commit checksum is expected here.  
 *Example*: 4.1.0
 *Example*: d48a0fe
 
-**software_branch**: Name of the git branch.
+**software_branch**: Name of the git branch.  
 *Example*: develop
 
-**software_commit**: Git commit checksum.
+**software_commit**: Git commit checksum.  
 *Example*: d48a0fe7afa763a50777c89a3289d1fd3b13cee5
 
 **software_log**: Ouput written to stdout and/or stderr by the software.
@@ -81,24 +82,24 @@ identical run_ids should indicate two identical runs. This could be a checksum.
 
 ```
 
-**key**: For CGE tools the key will be <database_name>-<database_version>.
+**key**: For CGE tools the key will be <database_name>-<database_version>.  
 *Example*: PointFinder-d48a0fe
 
-**database_name**: Name of a database used when running the software.
+**database_name**: Name of a database used when running the software.  
 *Example*: PointFinder
 
 **database_version**: [Semantic Versioning](https://semver.org/). Given a version number MAJOR.MINOR.PATCH. If no version number can be provided,
-the first seven digits of the Git commit checksum is expected here.
+the first seven digits of the Git commit checksum is expected here.  
 *Example*: 4.1.0
 *Example*: d48a0fe
 
-**database_branch**: Name of the git branch.
+**database_branch**: Name of the git branch.  
 *Example*: develop
 
-**database_commit**: Git commit checksum.
+**database_commit**: Git commit checksum.  
 *Example*: d48a0fe7afa763a50777c89a3289d1fd3b13cee5
 
-**checksum_sha256**: SHA256 checksum of entire database.
+**checksum_sha256**: SHA256 checksum of entire database.  
 *Example*: 08304e062528ae12ecb07abe139e26512fb5991e36df93e30e0d92d885479709
 
 ### gene
@@ -128,10 +129,10 @@ the first seven digits of the Git commit checksum is expected here.
 ```
 
 **key**: Unique identifier for gene hit. Several hits to the same gene can
-occur. Unlike the ref_id, this key must be unique between these hits.
+occur. Unlike the ref_id, this key must be unique between these hits.  
 *Example*: aph(6)-Id;;1;;M28829;;d5sm
 
-**name**: Gene name.
+**name**: Gene name.  
 *Example*: aph(6)-Id
 
 **identity**: Percent identical bps between query data (input) and reference
@@ -160,7 +161,7 @@ accession number identifying the sequence is stored here.
 **ref_end_pos**: Position in reference gene where the alignment ends.
 
 **query_id**: Unique identifier for the input sequence. For example a contig or
-read header.
+read header.  
 *Example*: NODE_47_length_14097_cov_7.40173_ID_3656
 
 **query_start_pos**: Position in query gene where the alignment starts.
@@ -218,16 +219,16 @@ be found.
 **var_codon**: Codon found in the input data. Is not used in non-coding variations.  
 *Example*: tta
 
-**ref_aa**: Reference amino acid. 1-character-coding.
+**ref_aa**: Reference amino acid. 1-character-coding.  
 *Example*: i
 
-**var_aa**: Amino acid found in input data. 1-character-coding.
+**var_aa**: Amino acid found in input data. 1-character-coding.  
 *Example*: l
 
-**ref_start_pos**: Position of variation start. If in coding region this is the amino acid position, if in a non-coding region this is the nucleotide acid position. For single amino acid substitution, this will be identical to ref_end_pos.
+**ref_start_pos**: Position of variation start. If in coding region this is the amino acid position, if in a non-coding region this is the nucleotide acid position. For single amino acid substitution, this will be identical to ref_end_pos.  
 *Example*: 38
 
-**ref_end_pos**: Position of variation end. If in coding region this is the amino acid position, if in a non-coding region this is the nucleotide acid position. For single amino acid substitution, this will be identical to ref_end_pos.
+**ref_end_pos**: Position of variation end. If in coding region this is the amino acid position, if in a non-coding region this is the nucleotide acid position. For single amino acid substitution, this will be identical to ref_end_pos.  
 *Example*: 38
 
 **substitution**: True if the variation is a substitution.
@@ -268,7 +269,7 @@ be found.
 
 **amr_classes**: List of amr classes the phenotype belongs to.
 
-**amr_resistance**: Name of antibiotic to which this phenotype causes resistance.
+**amr_resistance**: Name of antibiotic to which this phenotype causes resistance.  
 *Example*: netilmicin
 
 **amr_resistant**: Indicates if the phenotype in question describes amr resistance.
