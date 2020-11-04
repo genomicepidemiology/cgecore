@@ -12,21 +12,6 @@ class ApplicationError(subprocess.CalledProcessError):
     the command line string used in the cmd attribute, and (if captured)
     stdout and stderr as strings.
     This exception is a subclass of subprocess.CalledProcessError.
-
-    ###Example for doctests###
-
-    >>> err = ApplicationError(1, "helloworld", "", "Some error text")
-    >>> err.returncode, err.cmd, err.stdout, err.stderr
-    (1, 'helloworld', '', 'Some error text')
-    >>> print(err)
-    Non-zero return code 1 from 'helloworld', message 'Some error text'
-    >>> noterr = ApplicationError(1, "helloworld", "Some success text", "")
-    >>> noterr.returncode, noterr.cmd, noterr.stdout, noterr.stderr
-    (1, 'helloworld', 'Some success text', '')
-    >>> print(noterr)
-    Non-zero return code 1 from 'helloworld'
-
-    ###End of example for doctests###
     """
 
     def __init__(self, returncode, cmd, stdout="", stderr=""):
@@ -66,68 +51,9 @@ class ApplicationError(subprocess.CalledProcessError):
 class CommandLineBase:
     """Generic interface for constructing command line strings.
     This class shouldn't be called directly; it should be subclassed to
-    provide an implementation for a specific application.
-    For a usage example we'll show one of the EMBOSS wrappers.  You can set
+    provide an implementation for a specific application. You can set
     options when creating the wrapper object using keyword arguments - or
-    later using their corresponding properties:
-    >>> from cge2.applications.KMA.kma_application import KMACommandline
-    >>> kmaline = KMACommandline(k=10, ml=0.5)
-    >>> kmaline
-    KMACommandline(cmd='kma', k=10, ml=0.5)
-    #    You can instead manipulate the parameters via their properties, e.g.
-    >>> kmaline.k
-    10
-    >>> kmaline.gapopen = 20
-    >>> kmaline
-    WaterCommandline(cmd='water', k=20, ml=0.5)
-    You can clear a parameter you have already added by 'deleting' the
-    corresponding property:
-    >>> del kma.k
-    >>> kma.k
-    >>> kma
-    KMACommandline(cmd='kma', ml=0.5)
-    Once you have set the parameters you need, you can turn the object into
-    a string (e.g. to log the command):
-    >>> str(kma)
-    Traceback (most recent call last):
-    ...
-    ValueError: You must either set outfile (output filename), or enable filter
-    or stdout (output to stdout).
-    In this case the wrapper knows certain arguments are required to construct
-    a valid command line for the tool.  For a complete example,
-    >>> from Bio.Emboss.Applications import WaterCommandline
-    >>> water_cmd = WaterCommandline(gapopen=10, gapextend=0.5)
-    >>> water_cmd.asequence = "asis:ACCCGGGCGCGGT"
-    >>> water_cmd.bsequence = "asis:ACCCGAGCGCGGT"
-    >>> water_cmd.outfile = "temp_water.txt"
-    >>> print(water_cmd)
-    water -outfile=temp_water.txt -asequence=asis:ACCCGGGCGCGGT
-                -bsequence=asis:ACCCGAGCGCGGT -gapopen=10 -gapextend=0.5
-    >>> water_cmd
-    WaterCommandline(cmd='water', outfile='temp_water.txt',
-                     asequence='asis:ACCCGGGCGCGGT',
-                     bsequence='asis:ACCCGAGCGCGGT',
-                     gapopen=10, gapextend=0.5)
-    You would typically run the command line via a standard Python operating
-    system call using the subprocess module for full control. For the simple
-    case where you just want to run the command and get the output:
-    stdout, stderr = water_cmd()
-    Note that by default we assume the underlying tool is installed on the
-    system $PATH environment variable. This is normal under Linux/Unix, but
-    may need to be done manually under Windows. Alternatively, you can specify
-    the full path to the binary as the first argument (cmd):
-    >>> from Bio.Emboss.Applications import WaterCommandline
-    >>> water_cmd = WaterCommandline(r"C:\Program Files\EMBOSS\water.exe",
-    ...                              gapopen=10, gapextend=0.5,
-    ...                              asequence="asis:ACCCGGGCGCGGT",
-    ...                              bsequence="asis:ACCCGAGCGCGGT",
-    ...                              outfile="temp_water.txt")
-    >>> print(water_cmd)
-    "C:\Program Files\EMBOSS\water.exe" -outfile=temp_water.txt
-                -asequence=asis:ACCCGGGCGCGGT -bsequence=asis:ACCCGAGCGCGGT
-                -gapopen=10 -gapextend=0.5
-    Notice that since the path name includes a space it has automatically
-    been quoted.
+    later using their corresponding properties.
     """
 
     # TODO - Replace the above example since EMBOSS doesn't work properly
@@ -177,24 +103,10 @@ class CommandLineBase:
                                      % name)
                 aliases.add(name)
             name = p.names[-1]
-#            if _re_prop_name.match(name) is None:
-#                raise ValueError(
-#                    "Final parameter name %r cannot be used as "
-#                    "an argument or property name in python" % name
-#                )
-#            if name in _reserved_names:
-#                raise ValueError(
-#                    "Final parameter name %r cannot be used as "
-#                    "an argument or property name because it is "
-#                    "a reserved word in python" % name
-#                )
-#            if name in _local_reserved_names:
-#                raise ValueError(
-#                    "Final parameter name %r cannot be used as "
-#                    "an argument or property name due to the "
-#                    "way the CommandLineBase class works" % name
-#                )
 
+            if name == "custom_args":
+                continue
+                #new_arguments = _custom_arg(p)
             # Beware of binding-versus-assignment confusion issues
             def getter(name):
                 return lambda x: x._get_parameter(name)
@@ -224,15 +136,39 @@ class CommandLineBase:
 
     def _validate(self):
         """Make sure the required parameters have been set (PRIVATE).
+        Check that incompatible paramters are not set.
         No return value - it either works or raises a ValueError.
         This is a separate method (called from __str__) so that subclasses may
         override it.
         """
+        param_set = []
         for p in self.parameters:
+            if(p.is_set):
+                param_set.append(p.names[-1])
             # Check for missing required parameters:
-            if p.is_required and not (p.is_set):
-                raise ValueError("Parameter %s is not set." % p.names[-1])
-            # Also repeat the parameter validation here, just in case?
+            if p.is_required is True and not (p.is_set):
+                if not (p.alter_options):
+                    raise ValueError("Required parameter %s is not set."
+                                     % p.names[-1])
+                required_exists = 0
+                for p_set in self.parameters:
+                    if p_set.is_set and p_set.names[-1] in p.alter_options:
+                        required_exists = 1
+                        continue
+                if not required_exists:
+                    raise ValueError("Parameter %s is not set. Neither "
+                                     "alternative parameters as %s."
+                                     % (p.names[-1],
+                                        ', '.join(p.alter_options)))
+            # Check for incompatible paramters set
+            if p.incompatible is not None and p.is_set:
+                arg_incompatible = set(p.incompatible) & set(param_set)
+                if arg_incompatible:
+                    raise ValueError("Parameter %s is set, but the "
+                                     "incompatible parameter %s has "
+                                     "been also set."
+                                     % (p.names[-1],
+                                        ', '.join(arg_incompatible)))
 
     def __str__(self):
         """Make the commandline string with the currently set options.
@@ -277,7 +213,7 @@ class CommandLineBase:
         answer = "%s(cmd=%r" % (self.__class__.__name__, self.program_name)
         for parameter in self.parameters:
             if parameter.is_set:
-                if isinstance(parameter, _Switch):
+                if isinstance(parameter, _SwitchArgument):
                     answer += ", %s=True" % parameter.names[-1]
                 else:
                     answer += ", %s=%r" % (parameter.names[-1],
@@ -285,14 +221,51 @@ class CommandLineBase:
         answer += ")"
         return answer
 
+    def _custom_arg(self, parameter):
+        param_value = parameter.value.split(" ")
+        for i in range(len(param_value)):
+            if ":" in param_value[i]:
+                name, value_param = param_value[i].split(":")
+                value, charac = value_param.split("(")
+                charac = charac.replace(")", "")
+                names = [name, name.replace("-", "")]
+                extra_argument = _ContentArgument(names, description="Custom "
+                                                  "argument %s"
+                                                  % name.replace("-", ""),
+                                                  value=value, is_set=True)
+                if charac:
+                    for c in charac.split(";"):
+                        attribute = c.rstrip().split("=")
+                        if len(attribute) != 2:
+                            raise ValueError("Costum option name %s has not "
+                                             "set the extra characteristics in"
+                                             " the correct formatn (use '=')."
+                                             % name)
+                        if attribute[0] == "filename":
+                            extra_argument.filename = attribute[1]
+                        elif attribute[0] == "equate":
+                            extra_argument.equate = attribute[1]
+                        elif attribute[0] == "allow_multiple":
+                            extra_argument.allow_multiple = attribute[1]
+
+
+
     def _get_parameter(self, name):
         """Get a commandline option value (PRIVATE)."""
         for parameter in self.parameters:
             if name in parameter.names:
-                if isinstance(parameter, _Switch):
+                if isinstance(parameter, _SwitchArgument):
                     return parameter.is_set
                 else:
-                    return parameter.value
+                    if parameter.is_set:
+                        return parameter.value
+                    else:
+                        if parameter.default is not None:
+                            return str(parameter.default) + " (default)"
+                        else:
+                            raise ValueError("Option name %s is not set and"
+                                             " does not have a default value."
+                                             % name)
         raise ValueError("Option name %s was not found." % name)
 
     def _clear_parameter(self, name):
@@ -317,7 +290,7 @@ class CommandLineBase:
         set_option = False
         for parameter in self.parameters:
             if name in parameter.names:
-                if isinstance(parameter, _Switch):
+                if isinstance(parameter, _SwitchArgument):
                     if value is None:
                         import warnings
 
@@ -440,15 +413,6 @@ class CommandLineBase:
         else:
             stderr_arg = subprocess.PIPE
 
-        # We may not need to supply any piped input, but we setup the
-        # standard input pipe anyway as a work around for a python
-        # bug if this is called from a Windows GUI program.  For
-        # details, see http://bugs.python.org/issue1124861
-        #
-        # Using universal newlines is important on Python 3, this
-        # gives unicode handles rather than bytes handles.
-
-        # Windows 7, 8, 8.1 and 10 want shell = True
         if sys.platform != "win32":
             use_shell = True
         else:
@@ -503,12 +467,12 @@ class _ArgumentBase:
         raise NotImplementedError
 
 
-class _OptionArgument(_ArgumentBase):
+class _ContentArgument(_ArgumentBase):
     """Represent an option that can be set for a program.
     This holds UNIXish options like --append=yes and -a yes,
     where a value (here "yes") is generally expected.
     For UNIXish options like -kimura in clustalw which don't
-    take a value, use the _Switch object instead.
+    take a value, use the _SwitchArgument object instead.
     Attributes:
      - names -- a list of string names (typically two entries) by which
        the parameter can be set via the legacy set_parameter method
@@ -542,7 +506,11 @@ class _OptionArgument(_ArgumentBase):
         checker_function=None,
         is_required=False,
         equate=False,
-        required_options=None
+        required_options=None,
+        alter_options=None,
+        incompatible=None,
+        allow_multiple=False,
+        default=None
     ):
         self.names = names
         if not isinstance(description, str):
@@ -556,11 +524,10 @@ class _OptionArgument(_ArgumentBase):
         self.is_set = False
         self.value = None
         self.required_options = required_options
-
-    def limited_options(self):
-        if required_options:
-            assert self.value in self.required_options
-
+        self.alter_options = alter_options
+        self.incompatible = incompatible
+        self.default = default
+        self.allow_multiple = allow_multiple
 
     def __str__(self):
         """Return the value of this option for the commandline.
@@ -572,10 +539,19 @@ class _OptionArgument(_ArgumentBase):
         # now made explicitly when setting up the option.
         if self.value is None:
             return "%s " % self.names[0]
-        if self.is_filename:
-            v = _escape_filename(self.value)
+        if isinstance(self.value, list):
+            if self.allow_multiple:
+                if self.is_filename:
+                    v = " ".join(_escape_filename(val) for val in self.value) + " "
+                else:
+                    v = " ".join(self.value) + " "
+            else:
+                raise TypeError("This argument cannot be a list")
         else:
-            v = str(self.value)
+            if self.is_filename:
+                v = _escape_filename(self.value)
+            else:
+                v = str(self.value)
         if self.equate:
             return "%s=%s " % (self.names[0], v)
         else:
@@ -610,6 +586,7 @@ class _SwitchValueArgument(_ArgumentBase):
        the program to be run.
      - is_set -- if the parameter has been set
      - value -- the value of a parameter"""
+
     def __init__(
         self,
         names,
@@ -618,11 +595,13 @@ class _SwitchValueArgument(_ArgumentBase):
         checker_function=None,
         is_required=False,
         equate=False,
-        default=None,
+        default=False,
+        incompatible=None,
     ):
         self.names = names
         if not isinstance(description, str):
-            raise TypeError("Should be a string: %r for %s" % (description, names[-1]))
+            raise TypeError("Should be a string: %r for %s" % (description,
+                                                               names[-1]))
         # Note 'filename' is for any string with spaces that needs quoting
         self.is_filename = filename
         self.checker_function = checker_function
@@ -632,6 +611,7 @@ class _SwitchValueArgument(_ArgumentBase):
         self.is_set = False
         self.value = None
         self.default = default
+        self.incompatible = incompatible
 
     def __str__(self):
         """Return the value of this option for the commandline.
@@ -644,7 +624,7 @@ class _SwitchValueArgument(_ArgumentBase):
         if not self.is_set:
             return "%s False" % self.names[0]
         if self.value is None:
-            return "%s %s" % (self.names[0], self.default)
+            return "%s " % (self.names[0])
         if self.is_filename:
             v = _escape_filename(self.value)
         else:
@@ -672,14 +652,19 @@ class _SwitchArgument(_ArgumentBase):
      - description -- a description of the option. This is used as
        the property docstring.
      - is_set -- if the parameter has been set
+     - no_run -- if the argument exits the program
     NOTE - There is no value attribute, see is_set instead,
     """
 
-    def __init__(self, names, description):
+    def __init__(self, names, description, default=False, no_run=False,
+                 incompatible=None):
         self.names = names
         self.description = description
         self.is_set = False
         self.is_required = False
+        self.no_run = no_run
+        self.default = default
+        self.incompatible = incompatible
 
     def __str__(self):
         """Return the value of this option for the commandline.
@@ -690,6 +675,7 @@ class _SwitchArgument(_ArgumentBase):
             return "%s " % self.names[0]
         else:
             return ""
+
 
 class _Argument(_ArgumentBase):
     """Represent an argument on a commandline.
@@ -709,7 +695,8 @@ class _Argument(_ArgumentBase):
     ):
         self.names = names
         if not isinstance(description, str):
-            raise TypeError("Should be a string: %r for %s" % (description, names[-1]))
+            raise TypeError("Should be a string: %r for %s" % (description,
+                                                               names[-1]))
         # Note 'filename' is for any string with spaces that needs quoting
         self.is_filename = filename
         self.checker_function = checker_function
@@ -717,6 +704,7 @@ class _Argument(_ArgumentBase):
         self.is_required = is_required
         self.is_set = False
         self.value = None
+        self.no_run = False
 
     def __str__(self):
         if self.value is None:
@@ -776,19 +764,7 @@ def _escape_filename(filename):
     Note the function is more generic than the name suggests, since it
     is used to add quotes around any string arguments containing spaces.
     """
-    # Is adding the following helpful
-    # if os.path.isfile(filename):
-    #    # On Windows, if the file exists, we can ask for
-    #    # its alternative short name (DOS style 8.3 format)
-    #    # which has no spaces in it.  Note that this name
-    #    # is not portable between machines, or even folder!
-    #    try:
-    #        import win32api
-    #        short = win32api.GetShortPathName(filename)
-    #        assert os.path.isfile(short)
-    #        return short
-    #    except ImportError:
-    #        pass
+
     if not isinstance(filename, str):
         # for example the NCBI BLAST+ -outfmt argument can be an integer
         return filename
