@@ -50,6 +50,7 @@ to expect. The definition of kinds of output is written in detail in the
 ```
 
 **Obligatory class fields**  
+
 - **type**: should be identical to the class name (gene in the example above).
 - **key**: A string that uniquely identifies an entry of the type gene.
 
@@ -76,6 +77,7 @@ The key name can be any valid json key, in the above example it is "genes". The
 value needs to adhere to a specific format if it stores another class.
 
 **Class in class field format**  
+
 1. First word must be either "dict" or "array". It defines the data structure the
 class should be stored in, dictionary or array/list, respectively.
 2. After the first word must follow a white space character.
@@ -96,6 +98,7 @@ Each value definition that has a corresponding function in the "ValueParsers"
 class, will be checked using that function.
 
 **How to add a new value definition**  
+
 1. Make sure the name of the value definition does not already exist from the
 table below named "Value Definitions". Add it to the table (this file) and push
 the change to the repository (to make sure no one uses that name).
