@@ -72,6 +72,7 @@ ValueError: Parameter input_ipe is set, but the incompatible parameter input has
 /home/alfred/bio_tools/kma/kma -i /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_1.fq /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_2.fq  -o /home/alfred/Projects/cge_core_module2/cge2/tests/applications/output -t_db /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/beta-lactam
 >>> std_output, err_output = kmaline()
 >>> print(std_output)
+<BLANKLINE>
 >>> print(err_output)
 >>> kmaline.sup = 10
 Traceback (most recent call last):
@@ -81,7 +82,12 @@ ValueError: Option name sup was not found.
 >>> str(kmaline)
 '/home/alfred/bio_tools/kma/kma  -sup 10 --MEH -i /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_1.fq /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_2.fq  -o /home/alfred/Projects/cge_core_module2/cge2/tests/applications/output -t_db /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/beta-lactam'
 >>> std_output, err_output = kmaline()
+Traceback (most recent call last):
+...
+cge2.applications.command.ApplicationError
 >>> print(std_output)
+<BLANKLINE>
 >>> print(err_output)
+...
 
 ```
