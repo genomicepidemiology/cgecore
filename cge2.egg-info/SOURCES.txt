@@ -1,0 +1,7 @@
+README.md
+setup.py
+cge2/__init__.py
+cge2.egg-info/PKG-INFO
+cge2.egg-info/SOURCES.txt
+cge2.egg-info/dependency_links.txt
+cge2.egg-info/top_level.txt
