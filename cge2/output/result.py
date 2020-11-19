@@ -18,6 +18,9 @@ class Result(dict):
                  parsers=None, **kwargs):
 
         self.defs = {}
+        # classes in a template translates to Result objects.
+        self.classes = set()
+        self.errors = {}
         with open(fmt_file, "r") as fh:
             self.defs = json.load(fh)
 
@@ -51,23 +54,29 @@ class Result(dict):
 
     def add_class(self, cl, type, **kwargs):
         res = Result(type=type, **kwargs)
+        self.classes.add(cl)
         if(cl in self._parser.arrays):
             self[cl].append(res)
         elif(cl in self._parser.dicts):
             self[cl][res["key"]] = res
-#TODO DESCRIBE THISM LAST OPTION
+        # Do not store the result object in neither a dict or a list.
         else:
             self[cl] = res
 
-    def check_results(self, errors=None):
-        self.errors = {}
+    def check_results(self, strict=False, errors=None):
+        """ Populates self.errors if any errors are encountered """
 
         for key, val in self.items():
             if(key == "type"):
                 continue
-            # The key is not defined, and is not checked
+            # The key is not defined
             elif(key not in self.defs[self["type"]]):
-                continue
+                if(strict):
+                    self.errors[key] = ("Key not defined in template: {}"
+                                        .format(key))
+                    continue
+                else:
+                    continue
             self._check_result(key, val, self.errors)
 
         # errors is not None if called recursively

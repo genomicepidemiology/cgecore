@@ -6,6 +6,36 @@ import dateutil.parser
 class ValueParsers():
 
     @staticmethod
+    def parse_bool(val):
+        """
+        Test if value is either of the python bool types or if it is one of the
+        strings: True or False. The string test is not case sensitive.
+        """
+        accepted_vals = ("true", "false")
+        if(val is True or val is False):
+            return
+        elif(str(val).lower() in accepted_vals):
+            return
+        else:
+            return ("Value must be a boolean (True/False). Value was: {}"
+                    .format(val))
+
+    @staticmethod
+    def parse_bool_or_unknown(val):
+        """
+        Test if value is either of the python bool types or if it is one of the
+        strings: True, False, or Unknown. The string test is not case sensitive.
+        """
+        accepted_vals = ("true", "false", "unknown")
+        if(val is True or val is False):
+            return
+        elif(str(val).lower() in accepted_vals):
+            return
+        else:
+            return ("Value must be a boolean (True/False) or unknown. Value "
+                    "was: {}".format(val))
+
+    @staticmethod
     def parse_char64(val):
         """
         Test val is exactely 64 characters. Can be anything that can be handled

@@ -318,8 +318,6 @@ promoter regions etc.
 Are they always identical. If so, can there be two identical keys?
 
 **Missing value parser**
-- bool_or_unknown
-- bool
 - seq_var_string
 - codon_change_string
 - aminoacid_1_char

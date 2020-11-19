@@ -3,7 +3,28 @@
 TODO: Write documentation for ValueParsers.
 
 ```python
+
 >>> from valueparsers import ValueParsers
+
+### Test ValueParsers.parse_bool_or_unknown
+>>> ValueParsers.parse_bool(True)
+>>> ValueParsers.parse_bool(False)
+>>> ValueParsers.parse_bool("True")
+>>> ValueParsers.parse_bool("False")
+>>> ValueParsers.parse_bool("unknown")
+'Value must be a boolean (True/False). Value was: unknown'
+>>> ValueParsers.parse_bool(0)
+'Value must be a boolean (True/False). Value was: 0'
+
+### Test ValueParsers.parse_bool_or_unknown
+>>> ValueParsers.parse_bool_or_unknown(True)
+>>> ValueParsers.parse_bool_or_unknown(False)
+>>> ValueParsers.parse_bool_or_unknown("True")
+>>> ValueParsers.parse_bool_or_unknown("False")
+>>> ValueParsers.parse_bool_or_unknown("Unknown")
+>>> ValueParsers.parse_bool_or_unknown("unknown")
+>>> ValueParsers.parse_bool_or_unknown(0)
+'Value must be a boolean (True/False) or unknown. Value was: 0'
 
 ### Test ValueParsers.parse_char64
 >>> ValueParsers.parse_char64("54d762f5aacbd706457d109d520e3c550feb8df"
@@ -37,4 +58,5 @@ TODO: Write documentation for ValueParsers.
 >>> ValueParsers.parse_float(20.6)
 >>> ValueParsers.parse_float("Not a number")
 'Value must be a float. Value was: Not a number'
+
 ```

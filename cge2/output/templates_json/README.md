@@ -131,14 +131,16 @@ to a value stored in the class of type <origin_class> with the key named <key>.
 
 ## Value Definitions
 
-| Value name     | Definition                                        |
-| :------------- | ------------------------------------------------: |
-| string         | Basically anything can appear in this field.      |
-| integer        | Integer values.                                   |
-| char64         | String of exactly 64 characters (ex.: checksums). |
-| date           | ISO 8601 format (ex.: 2003-03-20).                |
-| percentage     | Float between 0 and 100.                          |
-| float          | Floating-point number.                            |
+| Value name      | Definition                                        |
+| :-------------- | ------------------------------------------------: |
+| string          | Basically anything can appear in this field.      |
+| integer         | Integer values.                                   |
+| char64          | String of exactly 64 characters (ex.: checksums). |
+| date            | ISO 8601 format (ex.: 2003-03-20).                |
+| percentage      | Float between 0 and 100.                          |
+| float           | Floating-point number.                            |
+| bool            | True or False                                     |
+| bool_or_unknown | True, False or Unknown (not case sensitive)       |
 
 ## BeOne template
 
