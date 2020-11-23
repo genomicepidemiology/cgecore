@@ -2,13 +2,13 @@
 
 This document describes how to extract data from specific CGE tools for implementation into the BiFrost summary fields.
 
+**Warning:** Code in this document has not been tested.
+
 ## ResFinder
 
 Standard CGE format has been almost fully implemented into ResFinder, and are therefore using the beone template described in details in [templates_json](https://bitbucket.org/genomicepidemiology/cge_core_module/src/2.0/cge2/output/templates_json/) and [beone](https://bitbucket.org/genomicepidemiology/cge_core_module/src/2.0/cge2/output/templates_json/beone/).
 
-All results are stored in the json file ResFinder outputs. This description assumes the use of Python. It assumes the resfinder json file loaded into a dict named "resfinder" and that the results needed for BiFrost should be stored in the dictionary "bifrost". The keys in the bifrost dictionary matches what the field names needed by bifrost.
-
-**Warning:** Code in this document has not been tested.
+All results are stored in the json file ResFinder outputs. This description assumes the use of Python. It assumes the resfinder json file loaded into a dict named "resfinder" and that the results needed for BiFrost should be stored in the dictionary "bifrost". The keys in the bifrost dictionary matches the field names needed by bifrost.
 
 ```python
 
