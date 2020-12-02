@@ -49,9 +49,6 @@ class Check_Dataset:
                         out.write(header)
                         gene_seq = []
                     else:
-                        if gene_seq and coding is not False:
-                            Check_Dataset.startend_codon(header, gene_seq[0],
-                                                         coding)
                         gene_seq.append(line.rstrip())
                 if not gene_seq and coding is not False:
                     Check_Dataset.startend_codon(header, gene_seq[0], coding)

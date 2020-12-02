@@ -67,13 +67,24 @@ ValueError: Parameter input_ipe is set, but the incompatible parameter input has
 >>> del kmaline.sparse
 >>> kmaline.input = ["/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_1.fq","/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_2.fq"]
 >>> kmaline.template_db = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/beta-lactam"
->>> kmaline.output = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output"
+>>> kmaline.output = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output"
 >>> print(kmaline)
 /home/alfred/bio_tools/kma/kma -i /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_1.fq /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/test_isolate_01_2.fq  -o /home/alfred/Projects/cge_core_module2/cge2/tests/applications/output -t_db /home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/beta-lactam
+>>> kmaline.matrix = True
+>>> kmaline.best_maps = True
+>>> kmaline.extra_files = True
+>>> kmaline.vcf = True
+>>> print(kmaline)
 >>> std_output, err_output = kmaline()
 >>> print(std_output)
 <BLANKLINE>
 >>> print(err_output)
+>>> kmaline.input = ["/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/data2/Ecoli4_S9_L001_R1_001.fastq","/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/data2/Ecoli4_S9_L001_R2_001.fastq"]
+>>> kmaline.output = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2"
+>>> kmaline()
+>>> kmaline.template_db = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/data/glycopeptide"
+>>> kmaline.output = "/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/glyco"
+>>> kmaline()
 >>> kmaline.sup = 10
 Traceback (most recent call last):
 ...

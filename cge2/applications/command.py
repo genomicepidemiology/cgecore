@@ -336,17 +336,6 @@ class CommandLineBase:
         assumed to be parameters, and passed to the self.set_parameter method
         for validation and assignment.
         """
-        #if self.path_exec == "":
-        #    if name in ["parameters", "program_name"]:  # Allowed attributes
-        #        self.__dict__[name] = value
-        #    else:
-        #        self.set_parameter(name, value)  # treat as a parameter
-        #else:
-        #    if name in ["parameters", "program_name", "path_exec"]:
-        #        # Allowed attributes
-        #        self.__dict__[name] = value
-        #    else:
-        #        self.set_parameter(name, value)  # treat as a parameter
         if name in ["parameters", "program_name", "path_exec"]:  # Allowed attributes
             self.__dict__[name] = value
         else:

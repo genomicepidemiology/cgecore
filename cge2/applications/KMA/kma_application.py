@@ -102,13 +102,17 @@ class KMACommandline(_KmaBaseCommandline):
                 ["-ef", "extra_files"],
                 "Output extra files",
             ),
-            _SwitchValueArgument(
+            _SwitchArgument(
                 ["-vcf", "vcf"],
                 "Make vcf file, 2 to apply FT",
-                filename=False,
-                default="False/0",
-                is_required=False,
             ),
+            #_SwitchValueArgument(
+            #    ["-vcf", "vcf"],
+            #    "Make vcf file, 2 to apply FT",
+            #    filename=False,
+            #    default="False/0",
+            #    is_required=False,
+            #),
             _SwitchValueArgument(
                 ["-sam", "sam"],
                 "Output sam to stdout, 4 to output mapped reads,"
