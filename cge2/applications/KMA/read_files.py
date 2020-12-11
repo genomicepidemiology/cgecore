@@ -142,29 +142,28 @@ class Parse_ResFile(Parse_File):
                                          " header")
                     entry = {self.header[i]: line_split[i]
                              for i in range(len(self.header))}
-                    yield entry
+                    yield {entry["Template"]: entry}
 
 
 class Parse_MatrixFile(Parse_File):
-    """Create iterator for a .res file"""
+    """Create iterator for a .mat file"""
 
     def __init__(self, path):
 
         Parse_File.__init__(self, path)
 
     def __iter__(self):
-        gene_df = None
-        gene_name = None
-        gene_df = None
+        template_df = None
+        template_name = None
         with gzip.open(self.path, "rt", newline="\n") as f:
             for line in f:
                 if line.startswith("#"):
-                    if gene_df is not None:
-                        dict_gene = {gene_name: gene_df}
-                        yield dict_gene
-                    gene_name = line.replace("#", "").rstrip()
-                    gene_df = pd.DataFrame(columns=["Nucl", "A", "C", "G",
-                                                    "T", "N", "-"])
+                    if template_df is not None:
+                        dict_template = {template_name: template_df}
+                        yield dict_template
+                    template_name = line.replace("#", "").rstrip()
+                    template_df = pd.DataFrame(columns=["Nucl", "A", "C", "G",
+                                                        "T", "N", "-"])
                 elif line in ['\n', '\r\n', '']:
                     continue
                 else:
@@ -173,9 +172,225 @@ class Parse_MatrixFile(Parse_File):
                                                                    "A", "C",
                                                                    "G", "T",
                                                                    "N", "-"])
-                    gene_df = gene_df.append(row_series, ignore_index=True)
-            dict_gene = {gene_name: gene_df}
-            yield dict_gene
+                    template_df = template_df.append(row_series,
+                                                     ignore_index=True)
+            dict_template = {template_name: template_df}
+            yield dict_template
+
+
+class Parse_AlignmentFile(Parse_File):
+    """Create iterator for .aln file"""
+
+    def __init__(self, path):
+        Parse_File.__init__(self, path)
+
+    def __iter__(self):
+        with open(self.path, "r") as file_open:
+            previous_line = None
+            entry_hit = None
+            alignment_entry = {}
+            for line in file_open:
+                if line.startswith("#") and previous_line is None:
+                    if entry_hit is not None:
+                        alignment_entry["template_seq"] = "".join(alignment_entry["template_seq"])
+                        alignment_entry["alignment_seq"] = "".join(alignment_entry["alignment_seq"])
+                        alignment_entry["query_seq"] = "".join(alignment_entry["query_seq"])
+                        yield {entry_hit: alignment_entry}
+                    entry_hit = line.replace("# ", "").rstrip()
+                    alignment_entry = {"template_seq": [],
+                                       "alignment_seq": [],
+                                       "query_seq": []}
+                    previous_line = "Header"
+                elif line.startswith("template:"):
+                    temp_seq = str(line.split("\t")[-1].rstrip())
+                    alignment_entry["template_seq"].append(temp_seq)
+                    previous_line = "Template"
+                elif previous_line == "Template":
+                    aln_seq = str(line.split("\t")[-1].rstrip())
+                    alignment_entry["alignment_seq"].append(aln_seq)
+                    previous_line = "Alignment"
+                elif line.startswith("query:"):
+                    query_seq = str(line.split("\t")[-1].rstrip())
+                    alignment_entry["query_seq"].append(query_seq)
+                    previous_line = "query"
+                else:
+                    previous_line = None
+            if entry_hit is not None:
+                alignment_entry["template_seq"] = "".join(alignment_entry["template_seq"])
+                alignment_entry["alignment_seq"] = "".join(alignment_entry["alignment_seq"])
+                alignment_entry["query_seq"] = "".join(alignment_entry["query_seq"])
+                yield {entry_hit: alignment_entry}
+            else:
+                yield {}
+
+
+class Parse_ConsensusFile(Parse_File):
+    """Create iterator for .fsa file"""
+
+    def __init__(self, path):
+
+        Parse_File.__init__(self, path)
+
+    def __iter__(self):
+        with open(self.path, "r") as file_open:
+            template_name = None
+            template_seq = []
+            for line in file_open:
+                if line.startswith("#"):
+                    if template_name is not None:
+                        template_str = "".join(template_seq)
+                        yield {template_name: template_str}
+                    template_name = line.replace("#", "").rstrip()
+                    template_seq = []
+                else:
+                    template_seq.append(line.rstrip())
+            if template_name is not None:
+                template_str = "".join(template_seq)
+                yield {template_name: template_str}
+            else:
+                yield {}
+
+
+class Parse_VCFFile(Parse_File):
+    """Create iterator for .vcf file"""
+
+    def __init__(self, path):
+
+        Parse_File.__init__(self, path)
+
+    def get_info(self):
+        info = {}
+        with gzip.open(self.path, 'rt') as file_open:
+            for line in file_open:
+                if line.startswith("##"):
+                    line_split = line.replace("##", "").rstrip().split("=")
+                    if len(line_split) == 2:
+                        info[line_split[0]] = line_split[1]
+                    else:
+                        if line_split[0] not in info:
+                            info[line_split[0]] = {}
+                        new_value = []
+                        for i in range(len(line_split[1:])-1):
+                            new_element = line_split[1:][i].replace('<', '').split(",")
+                            new_value.extend(new_element)
+                        new_value.append(line_split[-1].replace('>', ''))
+                        dict_value = dict(zip(new_value[::2], new_value[1::2]))
+                        info[line_split[0]].update({dict_value["ID"]:
+                                                    dict_value})
+                else:
+                    break
+        return info
+
+    def __iter__(self):
+        with gzip.open(self.path, 'rt') as file_open:
+            template_name = None
+            template_df = pd.DataFrame()
+            for line in file_open:
+                if line.startswith("##"):
+                    pass
+                elif line.startswith("#"):
+                    header = line.replace("#", "").rstrip().split("\t")
+                else:
+                    line_vcf = line.rstrip().split("\t")
+                    if template_name == line_vcf[0]:
+                        template_df = template_df.append(
+                                        pd.Series(data=line_vcf, index=header),
+                                        ignore_index=True)
+                    else:
+                        if template_name is not None:
+                            yield {template_name: template_df}
+                        template_name = line_vcf[0]
+                        template_df = pd.DataFrame([line_vcf], columns=header)
+        yield {template_name: template_df}
+
+
+class Parse_SPAFile(Parse_File):
+
+    def __init__(self, path):
+
+        Parse_File.__init__(self, path)
+
+    def __iter__(self):
+        with open(self.path, 'r') as file_open:
+            for line in file_open:
+                if line.startswith("#"):
+                    header = line.replace("#", "").rstrip().split("\t")
+                else:
+                    line_split = line.rstrip().split("\t")
+                    entry = {header[i]: line_split[i]
+                             for i in range(len(header))}
+                    yield {entry["Template"]: entry}
+
+
+class Parse_MapstatFile(Parse_File):
+
+    def __init__(self, path):
+
+        Parse_File.__init__(self, path)
+
+    def get_info(self):
+        info = {}
+        with open(self.path, 'r') as file_open:
+            for line in file_open:
+                if line.startswith("##"):
+                    split_line = line.replace("## ", "").rstrip().split("\t")
+                    if len(split_line) != 2:
+                        raise TypeError("The information line of Mapstat does"
+                                        " not follow the normal format (%)" %
+                                        (line))
+                    info[split_line[0]] = split_line[1]
+                else:
+                    break
+        return info
+
+    def __iter__(self):
+        with open(self.path, 'r') as file_open:
+            for line in file_open:
+                if line.startswith("# "):
+                    header = line.replace("# ", "").rstrip().split("\t")
+                elif line.startswith("## "):
+                    pass
+                else:
+                    line_split = line.rstrip().split("\t")
+                    entry = {header[i]: line_split[i]
+                             for i in range(len(header))}
+                    yield {entry["refSequence"]: entry}
+
+
+class Parse_FragFile(Parse_File):
+
+    def __init__(self, path):
+
+        Parse_File.__init__(self, path)
+
+    def __iter__(self):
+        template_df = pd.DataFrame()
+        template_name = None
+        header = None
+        with gzip.open(self.path, 'rt') as file_open:
+            for line in file_open:
+                line_frag = line.rstrip().split("\t")
+                if line_frag[5] == template_name:
+                    template_df = template_df.append(pd.Series(data=line_frag,
+                                                               index=header),
+                                                     ignore_index=True)
+                else:
+                    if template_name is not None:
+                        yield {template_name: template_df}
+                    if len(line_frag) == 7:
+                        header = ["query_seq", "eq_mapped", "aln_score",
+                                  "start_aln", "end_aln", "template",
+                                  "query_name"]
+                    elif len(line_frag) == 9:
+                        header = ["query_seq", "eq_mapped", "aln_score",
+                                  "start_aln", "end_aln", "template",
+                                  "query_name", "cut1", "cut2"]
+                    else:
+                        raise KeyError("Fragment file is does has not 7 or 9 "
+                                       "columns")
+                    template_name = line_frag[5]
+                    template_df = pd.DataFrame([line_frag], columns=header)
+        yield {template_name: template_df}
 
 
 class Iterator_KMA:
