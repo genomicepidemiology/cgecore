@@ -1,6 +1,7 @@
 ###Testing of CommandLineBase
 ```python3
->>> from read_files import KMA_ResultFile, KMA_alignment, Iterator_KMA, Parse_ResFile, Parse_MatrixFile, Parse_AlignmentFile, Parse_VCFFile, Parse_SPAFile, Parse_MapstatFile, Parse_FragFile
+>>> from read_files import KMA_ResultFile, KMA_alignment, Iterate_KMAFiles
+>>> from alignment_files import Parse_ResFile, Parse_MatrixFile, Parse_AlignmentFile, Parse_VCFFile, Parse_SPAFile, Parse_MapstatFile, Parse_FragFile, Iterator_ResFile, Iterator_MapstatFile
 >>> a = KMA_alignment(output_path="/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2", files=["Result"])
 >>> print(a)
 >>> b = Parse_ResFile("/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2.res")
@@ -21,6 +22,41 @@
 >>> mapstat.get_info()
 >>> for n in mapstat: print(n)
 >>> frag = Parse_FragFile("/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2.frag.gz")
->>> for n in frag: print(n)
+>>> #for n in frag: print(n)
+>>> iter_res = Iterator_ResFile("/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2.res")
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> print(next(iter_res))
+>>> iter_map = Iterator_MapstatFile("/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2.mapstat")
+>>> for n in iter_map: print(n)
+>>> iter_map = Iterator_MapstatFile("/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2.mapstat")
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> print(next(iter_map))
+>>> iter_res = Iterator_ResFile("/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2.res")
+>>> for n in iter_res: print(n)
+>>> a=KMA_alignment(output_path="/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2", files=["Result", "Mapstat"])
+>>> individual_file = KMA_ResultFile(name="Result", output="/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2", extension= ".res")
+>>> a[2] = "Consensus"
+>>> print(individual_file)
+>>> print(repr(individual_file))
+>>> print(a)
+>>> print(repr(a))
+>>> b = Iterate_KMAFiles(output_path="/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/output2/output2", files=["Result", "Mapstat"])
+>>> for n in b: print(n)
 
 ```

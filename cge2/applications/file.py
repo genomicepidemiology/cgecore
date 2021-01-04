@@ -30,10 +30,10 @@ class FileError(Exception):
 class _File:
     """Generic interface for taking information from files"""
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, is_empty=None, compression=None):
         self.file_path = file_path
-        self.is_empty = None
-        self.compression = None
+        self.is_empty = is_empty
+        self.compression = compression
 
     def define_file(self):
 
