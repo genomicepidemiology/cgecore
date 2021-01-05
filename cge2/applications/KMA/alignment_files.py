@@ -174,14 +174,15 @@ class Read_Alignment:
                          verify_integrity=True)
         return spa_df.to_dict("index")
 
+
 class Parse_File(object):
     """A generator that iterates through a CC-CEDICT formatted file, returning
     a tuple of parsed results (Traditional, Simplified, Pinyin, English)"""
 
-    def __init__(self, path, gzip=False):
+    def __init__(self, path, is_gzip=False):
         self.path = path
-        if gzip:
-            self.file = gzip.open(path, "rt", newline="\n")
+        if is_gzip:
+            self.file = gzip.open(path, "rt")
         else:
             self.file = open(path, "r")
         signal.signal(signal.SIGINT, self.signal_term_handler)
@@ -314,6 +315,361 @@ class Iterator_MapstatFile(Parse_File):
                 entry_line = False
         return entry
 
+
+class Iterator_MatrixFile(Parse_File):
+    """Create iterator for a .matrix file"""
+
+    def __init__(self, path, is_gzip=True):
+        self.header = ["Nucleotide", "A", "C", "G", "T", "N", "-"]
+
+        Parse_File.__init__(self, path, is_gzip)
+
+        self.gene = None
+        self.template_df = None
+
+    def __repr__(self):
+
+        return "Iterator_MatrixFile(%s)" % self.path
+
+    def __str__(self):
+
+        return self.path
+
+    def __iter__(self):
+
+        return self
+
+    def __next__(self):
+        entry_line = True
+        Parse_File.opened_file(self)
+        while entry_line:
+            line = self.file.readline()
+            if line.startswith("#"):
+                if self.gene is not None:
+                    entry = {self.gene: self.template_df}
+                    entry_line = False
+                self.gene = line.replace("#", "").rstrip()
+                self.template_df = pd.DataFrame(columns=self.header)
+            elif line == "\n":
+                continue
+            elif line == "":
+                if self.gene is not None:
+                    entry = {self.gene: self.template_df}
+                    entry_line = False
+                else:
+                    entry = None
+                Parse_File.close(self)
+            else:
+                line_split = line.rstrip().split("\t")
+                if len(line_split) != len(self.header):
+                    raise IndexError("Length of line is not equal to"
+                                     " header")
+                row_series = pd.Series(data=line_split, index=self.header)
+                self.template_df = self.template_df.append(row_series,
+                                                           ignore_index=True)
+
+        return entry
+
+
+class Iterator_AlignmentFile(Parse_File):
+    """Create iterator for a .frag file"""
+
+    def __init__(self, path, is_gzip=False):
+
+        Parse_File.__init__(self, path, is_gzip)
+
+        self.gene = None
+        self.alignment = None
+
+    def __repr__(self):
+
+        return "Iterator_MatrixFile(%s)" % self.path
+
+    def __str__(self):
+
+        return self.path
+
+    def __iter__(self):
+
+        return self
+
+    def __next__(self):
+        entry_line = True
+        Parse_File.opened_file(self)
+        while entry_line:
+            line = self.file.readline()
+            if line.startswith("# "):
+                if self.gene is not None:
+                    self.alignment["template_seq"] = "".join(
+                        self.alignment["template_seq"])
+                    self.alignment["alignment_seq"] = "".join(
+                        self.alignment["alignment_seq"])
+                    self.alignment["query_seq"] = "".join(
+                        self.alignment["query_seq"])
+                    entry = {self.gene: self.alignment}
+                    entry_line = False
+                self.gene = line.replace("# ", "").rstrip()
+                self.alignment = {"template_seq": [], "alignment_seq": [],
+                                  "query_seq": []}
+            elif line.startswith("template:"):
+                temp_seq = str(line.split("\t")[-1].rstrip())
+                self.alignment["template_seq"].append(temp_seq)
+            elif line.startswith("query:"):
+                temp_seq = str(line.split("\t")[-1].rstrip())
+                self.alignment["query_seq"].append(temp_seq)
+            elif line == "\n":
+                continue
+            elif line == "":
+                if self.gene is not None:
+                    entry = {self.gene: self.template_df}
+                    entry_line = False
+                else:
+                    entry = None
+                Parse_File.close(self)
+            else:
+                aln_seq = str(line.split("\t")[-1].rstrip())
+                self.alignment["alignment_seq"].append(aln_seq)
+        return entry
+
+
+class Iterator_ConsensusFile(Parse_File):
+    """Create iterator for a .fsa file"""
+
+    def __init__(self, path):
+        self.gene = None
+        self.sequence = None
+
+        Parse_File.__init__(self, path)
+
+    def __repr__(self):
+
+        return "Iterator_ConsensusFile(%s)" % self.path
+
+    def __str__(self):
+
+        return self.path
+
+    def __iter__(self):
+
+        return self
+
+    def __next__(self):
+        entry_line = True
+        Parse_File.opened_file(self)
+        while entry_line:
+            line = self.file.readline()
+            if line.startswith(">"):
+                if self.gene is not None:
+                    self.sequence = "".join(self.sequence)
+                    entry = {self.gene: self.sequence}
+                    entry_line = False
+                self.gene = line.replace(">", "").rstrip()
+                self.sequence = []
+            elif line == "\n":
+                continue
+            elif line == "":
+                if self.gene is not None:
+                    self.sequence = "".join(self.sequence)
+                    entry = {self.gene: self.sequence}
+                    entry_line = False
+                else:
+                    entry = None
+                Parse_File.close(self)
+            else:
+                self.sequence.append(line.rstrip())
+        return entry
+
+
+class Iterator_VCFFile(Parse_File):
+
+    def __init__(self, path, is_gzip=True):
+        self.gene = None
+        self.header = None
+        self.template_df = None
+
+        Parse_File.__init__(self, path, is_gzip)
+
+    def __repr__(self):
+
+        return "Iterator_VCFFile(%s)" % self.path
+
+    def __str__(self):
+
+        return self.path
+
+    def __iter__(self):
+
+        return self
+
+    def __next__(self):
+        entry_line = True
+        Parse_File.opened_file(self)
+        while entry_line:
+            line = self.file.readline()
+            if line.startswith("##"):
+                pass
+            elif line.startswith("#"):
+                self.header = line.replace("#", "").rstrip().split("\t")
+            elif line == "":
+                if self.gene is not None:
+                    entry = {self.gene: self.template_df}
+                    entry_line = False
+                else:
+                    entry = None
+                Parse_File.close(self)
+            else:
+                line_split = line.rstrip().split("\t")
+                if self.gene == line_split[0]:
+                    if len(line_split) != len(self.header):
+                        raise IndexError("Length of line is not equal to"
+                                         " header")
+                    row_series = pd.Series(data=line_split, index=self.header)
+                    self.template_df = self.template_df.append(row_series,
+                                                               ignore_index=True)
+                else:
+                    if self.gene is not None:
+                        entry = {self.gene: self.template_df}
+                        entry_line = False
+                    self.gene = line_split[0]
+                    self.template_df = pd.DataFrame(columns=self.header)
+        return entry
+
+    def get_info(self):
+        info = {}
+        with gzip.open(self.path, 'rt') as file_open:
+            for line in file_open:
+                if line.startswith("##"):
+                    line_split = line.replace("##", "").rstrip().split("=")
+                    if len(line_split) == 2:
+                        info[line_split[0]] = line_split[1]
+                    else:
+                        if line_split[0] not in info:
+                            info[line_split[0]] = {}
+                        new_value = []
+                        for i in range(len(line_split[1:])-1):
+                            new_element = line_split[1:][i].replace('<', '').split(",")
+                            new_value.extend(new_element)
+                        new_value.append(line_split[-1].replace('>', ''))
+                        dict_value = dict(zip(new_value[::2], new_value[1::2]))
+                        info[line_split[0]].update({dict_value["ID"]:
+                                                    dict_value})
+                else:
+                    break
+        return info
+
+
+class Iterator_SPAFile(Parse_File):
+    """Create iterator for .spa file"""
+
+    def __init__(self, path):
+        self.header = None
+
+        Parse_File.__init__(self, path)
+
+    def __repr__(self):
+
+        return "Iterator_SPAFile(%s)" % self.path
+
+    def __str__(self):
+
+        return self.path
+
+    def __iter__(self):
+
+        return self
+
+    def __next__(self):
+        entry_line = True
+        Parse_File.opened_file(self)
+        while entry_line:
+            line = self.file.readline()
+            if line == "":
+                entry = None
+                Parse_File.close(self)
+                raise StopIteration("The iterator has arrived to the end of "
+                                    "the file")
+            elif line.startswith("#"):
+                self.header = line.replace("#",
+                                           "").rstrip().replace(" ",
+                                                                "").split("\t")
+            else:
+                line_split = line.rstrip().replace(" ", "").split("\t")
+                if len(line_split) != len(self.header):
+                    raise IndexError("Length of line is not equal to"
+                                     " header")
+                entry = {}
+                for i in range(len(self.header)):
+                    try:
+                        value_entry = float(line_split[i])
+                    except ValueError:
+                        value_entry = line_split[i]
+                    entry[self.header[i]] = value_entry
+                entry_line = False
+        return entry
+
+
+class Iterator_FragmentFile(Parse_File):
+    """Create iterator for .frag file"""
+
+    def __init__(self, path, gzip=True):
+        self.header = None
+        self.gene = None
+        self.template_df = None
+
+        Parse_File.__init__(self, path, gzip)
+
+    def __repr__(self):
+
+        return "Iterator_FragmentFile(%s)" % self.path
+
+    def __str__(self):
+
+        return self.path
+
+    def __iter__(self):
+
+        return self
+
+    def __next__(self):
+        entry_line = True
+        Parse_File.opened_file(self)
+        while entry_line:
+            line = self.file.readline()
+            if line == "":
+                if self.gene is not None:
+                    entry = {self.gene: self.template_df}
+                    entry_line = False
+                else:
+                    entry = None
+                Parse_File.close(self)
+            else:
+                line_split = line.rstrip().split("\t")
+                if self.gene == line_split[5]:
+                    if len(line_split) != len(self.header):
+                        raise IndexError("Length of line is not equal to"
+                                         " header")
+                    row_series = pd.Series(data=line_split, index=self.header)
+                    self.template_df = self.template_df.append(row_series,
+                                                               ignore_index=True)
+                else:
+                    if self.gene is None:
+                        if len(line_split) == 7:
+                            self.header = ["query_seq", "eq_mapped", "aln_score",
+                                           "start_aln", "end_aln", "template",
+                                      "query_name"]
+                        elif len(line_split) == 9:
+                            self.header = ["query_seq", "eq_mapped", "aln_score",
+                                      "start_aln", "end_aln", "template",
+                                      "query_name", "cut1", "cut2"]
+                        else:
+                            raise KeyError("Fragment file is does has not 7 or"
+                                           "9 columns")
+                    else:
+                        entry = {self.gene: self.template_df}
+                        entry_line = False
+                    self.gene = line_split[5]
+                    self.template_df = pd.DataFrame(columns=self.header)
+        return entry
 
 class Parse_ResFile(Parse_File):
     """Create generator for a .res file"""
