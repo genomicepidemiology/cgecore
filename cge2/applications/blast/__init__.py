@@ -2,11 +2,10 @@ from cge2.applications.command import _ContentArgument, CommandLineBase
 from cge2.applications.command import _SwitchArgument
 
 
-class _KmaBaseCommandline(CommandLineBase):
-    """Base Commandline object for KMA wrappers (PRIVATE).
+class _BlastBaseCommandline(CommandLineBase):
+    """Base Commandline object for Blast wrappers (PRIVATE).
     This is provided for subclassing, it deals with shared options
-    common to all the KMA tools (kma, kma_index, kma_update, etc
-    AND kma_shm).
+    common to all the blast tools (blastn, etc).
     """
 
     def __init__(self, cmd=None, path_exec="", **kwargs):
@@ -14,13 +13,19 @@ class _KmaBaseCommandline(CommandLineBase):
         extra_parameters = [
             # Core:
             _SwitchArgument(
-                ["-h", "h"],
-                "Print USAGE, DESCRIPTION and ARGUMENTS description; "
+                ["-h", "help"],
+                "Print USAGE, DESCRIPTION description; "
                 "ignore other arguments.",
                 no_run=True,
             ),
             _SwitchArgument(
-                ["-v", "v"],
+                ["-help", "help_extended"],
+                "Print EXTENDED USAGE, DESCRIPTION and ARGUMENTS description; "
+                "ignore other arguments.",
+                no_run=True,
+            ),
+            _SwitchArgument(
+                ["-version", "version"],
                 "Print version number;  "
                 "ignore other arguments.",
                 no_run=True,
@@ -35,7 +40,7 @@ class _KmaBaseCommandline(CommandLineBase):
             # Insert extra parameters - at the start just in case there
             # are any arguments which must come last:
             self.parameters = extra_parameters + self.parameters
-        except TypeError:
+        except AttributeError:
             # Should we raise an error?  The subclass should have set this up!
             self.parameters = extra_parameters
         # Do we need a method to add a method for adding arguments in front?

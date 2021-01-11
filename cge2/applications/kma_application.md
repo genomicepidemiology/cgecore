@@ -17,7 +17,7 @@ Non-zero return code 1 from 'helloworld', message 'Some error text'
 Non-zero return code 1 from 'helloworld'
 
 ```
-###Testing of CommandLineBase
+###Testing of KMACommandLineBase
 ```python3
 >>> from KMA.kma_application import KMACommandline
 >>> kmaline = KMACommandline(k_size=10, min_len=0.5, sparse=True)

@@ -411,6 +411,7 @@ class KMACommandline(_KmaBaseCommandline):
         ]
         _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)
 
+
 class KMAIndexCommandline(_KmaBaseCommandline):
     """Base Commandline object for (new) NCBI BLAST+ wrappers (PRIVATE).
     This is provided for subclassing, it deals with shared options
@@ -575,7 +576,6 @@ class KMAShmCommandline(_KmaBaseCommandline):
             ),
         ]
         _KmaBaseCommandline.__init__(self, cmd, path_exec, **kwargs)
-
 
 
 class KMASeq2FastaCommandline(_KmaBaseCommandline):
