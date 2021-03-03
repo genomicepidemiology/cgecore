@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from valueparsers import ValueParsers
+from cge2.output.valueparsers import ValueParsers
 
 
 class ParserDict(dict):

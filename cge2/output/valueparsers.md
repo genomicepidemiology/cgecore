@@ -4,7 +4,7 @@ TODO: Write documentation for ValueParsers.
 
 ```python
 
->>> from valueparsers import ValueParsers
+>>> from cge2.output.valueparsers import ValueParsers
 
 ### Test ValueParsers.parse_bool_or_unknown
 >>> ValueParsers.parse_bool(True)

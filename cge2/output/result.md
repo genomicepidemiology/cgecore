@@ -2,8 +2,8 @@
 
 ```python
 
->>> from result import Result, ResultParser
->>> from exceptions import CGECoreOutTypeError, CGECoreOutInputError
+>>> from cge2.output.result import Result, ResultParser
+>>> from cge2.output.exceptions import CGECoreOutTypeError, CGECoreOutInputError
 
 ```
 
@@ -28,7 +28,7 @@ values is also chosen. Per default it is the ValueParsers class.
 class.
 ```python
 
->>> from valueparsers import ValueParsers
+>>> from cge2.output.valueparsers import ValueParsers
 >>> custom_parser = ValueParsers
 >>> res = Result(parsers=custom_parser, **{"type": "software_result"})
 
@@ -124,8 +124,8 @@ KeyError: 'key'
 ...               **{"key": "phen", "key2": "val2"})
 ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 Traceback (most recent call last):
-exceptions.CGECoreOutTypeError: Unknown result type given. Type given: None.
-                                Type must be one of: [...]
+cge2.output.exceptions.CGECoreOutTypeError: Unknown result type given.
+    Type given: None. Type must be one of: [...]
 
 ```
 
@@ -187,8 +187,8 @@ by recursive calls.
 >>> res.check_results(strict=True)
 ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 Traceback (most recent call last):
-exceptions.CGECoreOutInputError: ("Some input data did not pass validation...
-                                   'undefined_key': 'Key not defined...'...)
+cge2.output.exceptions.CGECoreOutInputError: ("Some input data did not pass
+    validation... 'undefined_key': 'Key not defined...'...)
 
 ```
 
@@ -204,8 +204,8 @@ Test with incorrect date format.
 >>> res.check_results()
 ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 Traceback (most recent call last):
-exceptions.CGECoreOutInputError: ("Some input data did not pass validation...
-                                   'run_date': 'Date format not rec...'...)
+cge2.output.exceptions.CGECoreOutInputError: ("Some input data did not pass
+    validation... 'run_date': 'Date format not rec...'...)
 
 >>> try:
 ...     res.check_results()
@@ -242,8 +242,8 @@ Test with nested Result object (recursive call) that has incorrect value.
 >>> res.check_results()
 ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 Traceback (most recent call last):
-exceptions.CGECoreOutInputError: ("Some input data did not pass validation...
-                                  'amr_resistant': 'Value must be a bool...'...)
+cge2.output.exceptions.CGECoreOutInputError: ("Some input data did not pass
+    validation... 'amr_resistant': 'Value must be a bool...'...)
 
 ```
 
@@ -259,8 +259,9 @@ CGECoreOutTypeError.
 >>> res._set_type(type="Not valid type")
 ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 Traceback (most recent call last):
-exceptions.CGECoreOutTypeError: Unknown result type given. Type given: Not valid
-                                type. Type must be one of: [...]
+cge2.output.exceptions.CGECoreOutTypeError:
+    Unknown result type given. Type given: Not valid type.
+    Type must be one of: [...]
 >>> res._set_type("software_result")
 
 ```
@@ -288,7 +289,7 @@ and replaced with "...".
 >>> res = Result(type="some_type")
 ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 Traceback (most recent call last):
-exceptions.CGECoreOutTypeError:
+cge2.output.exceptions.CGECoreOutTypeError:
     Unknown result type given. Type given: some_type. Type must be one of: [...]
 
 ```

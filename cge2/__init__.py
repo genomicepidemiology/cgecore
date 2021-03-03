@@ -2,8 +2,8 @@
 """
 The CGE functions module
 """
-from .applications import command
-from .applications.KMA import kma_application
+from cge2.applications import command
+from cge2.applications.KMA import kma_application
 
 
 #####################
