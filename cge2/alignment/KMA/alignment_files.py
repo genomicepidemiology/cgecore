@@ -7,7 +7,7 @@ import pandas as pd
 from Bio import SeqIO
 import signal
 import sys
-from cge2.alignment.results_alignment import Hit_alignment
+from cge2.alignment.results_alignment import Hit_Alignment, Feature_hit
 
 
 class Read_Alignment:
@@ -27,7 +27,8 @@ class Read_Alignment:
 
         fragment_dict = {}
         try:
-            frag_dataframe = pd.read_csv(file_path, sep="\t", compression="gzip",
+            frag_dataframe = pd.read_csv(file_path, sep="\t",
+                                         compression="gzip",
                                          skip_blank_lines=True, na_filter=True)
         except pd.errors.EmptyDataError:
             return fragment_dict
@@ -211,6 +212,8 @@ class Iterator_ResFile(Parse_File):
 
     def __init__(self, path):
         self.header = None
+        self.software = "kma"
+        self.file = "Result"
 
         Parse_File.__init__(self, path)
 
@@ -245,24 +248,27 @@ class Iterator_ResFile(Parse_File):
                 if len(line_split) != len(self.header):
                     raise IndexError("Length of line is not equal to"
                                      " header")
-                entry = {}
+                hit = Hit_Alignment(software=self.software,
+                                    empty=False,
+                                    file=self.file)
                 for i in range(len(self.header)):
                     try:
                         value_entry = float(line_split[i])
                     except ValueError:
                         value_entry = line_split[i]
-                    entry[self.header[i]] = value_entry
+                    feature_hit = Feature_hit(feature=self.header[i],
+                                              value=value_entry,
+                                              description=None)
+                    hit[self.header[i]] = feature_hit
                 entry_line = False
-#        return Hit_alignment(template=entry["Template"], software="KMA",
-#                             data={"Result": entry})
-        return {entry["Template"]: entry}
+        return hit
 
 
 class Iterator_MapstatFile(Parse_File):
 
     def __init__(self, path):
         self.header = None
-
+        self.software = "kma"
         Parse_File.__init__(self, path)
 
     def get_info(self):
@@ -308,17 +314,19 @@ class Iterator_MapstatFile(Parse_File):
                 if len(line_split) != len(self.header):
                     raise IndexError("Length of line is not equal to"
                                      " header")
-                entry = {}
+                hit = Hit_alignment(software=self.software,
+                                    templates_file=self.path, empty=False)
                 for i in range(len(self.header)):
                     try:
                         value_entry = float(line_split[i])
                     except ValueError:
                         value_entry = line_split[i]
-                    entry[self.header[i]] = value_entry
+                    feature_hit = Feature_hit(feature=self.header[i],
+                                              value=value_entry,
+                                              description=None)
+                    hit[self.header[i]] = feature_hit
                 entry_line = False
-#        return Hit_alignment(template=entry["refSequence"], software="KMA",
-#                             data={"Mapstat": entry})
-        return {entry["refSequence"]: entry}
+        return hit
 
 
 class Iterator_MatrixFile(Parse_File):
@@ -326,6 +334,7 @@ class Iterator_MatrixFile(Parse_File):
 
     def __init__(self, path, is_gzip=True):
         self.header = ["Nucleotide", "A", "C", "G", "T", "N", "-"]
+        self.software = "kma"
 
         Parse_File.__init__(self, path, is_gzip)
 
@@ -384,6 +393,7 @@ class Iterator_AlignmentFile(Parse_File):
     def __init__(self, path, is_gzip=False):
 
         Parse_File.__init__(self, path, is_gzip)
+        self.software = "kma"
 
         self.gene = None
         self.alignment = None
@@ -447,6 +457,7 @@ class Iterator_ConsensusFile(Parse_File):
     def __init__(self, path):
         self.gene = None
         self.sequence = None
+        self.software = "kma"
 
         Parse_File.__init__(self, path)
 
@@ -497,6 +508,7 @@ class Iterator_VCFFile(Parse_File):
         self.gene = None
         self.header = None
         self.template_df = None
+        self.software = "kma"
 
         Parse_File.__init__(self, path, is_gzip)
 
@@ -575,6 +587,7 @@ class Iterator_SPAFile(Parse_File):
     """Create iterator for .spa file"""
 
     def __init__(self, path):
+        self.software = "kma"
         self.header = None
 
         Parse_File.__init__(self, path)
@@ -630,6 +643,7 @@ class Iterator_FragmentFile(Parse_File):
         self.header = None
         self.gene = None
         self.template_df = None
+        self.software = "kma"
 
         Parse_File.__init__(self, path, gzip)
 

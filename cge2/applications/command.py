@@ -290,7 +290,7 @@ class CommandLineBase:
                     parameter.is_set = True
                     set_option = True
         if not set_option:
-            raise ValueError("Option name %s was not found." % name)
+            raise ValueError("Option name %s was not found. %s" % (name, self.parameters))
 
     def _check_value(self, value, name, check_function):
         """Check whether the given value is valid (PRIVATE).
