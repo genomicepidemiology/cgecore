@@ -24,4 +24,3 @@ Alignment results class test
 >>> print(next(iter_res))
 >>> print(next(iter_res))
 >>> iter_res = Iterator_XMLFile("/home/alfred/Projects/cge_core_module2/cge2/tests/applications/output/outputblastamino5.xml")
->>> for i in iter_res: print(i)

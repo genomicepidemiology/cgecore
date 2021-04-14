@@ -8,6 +8,9 @@ from Bio import SeqIO
 import signal
 import sys
 from cge2.alignment.results_alignment import Hit_Alignment, Feature_hit
+from cge2.alignment.Hit import KMAHit
+from cge2.alignment.translate_hits import Translate_Hits
+
 
 
 class Read_Alignment:
@@ -213,7 +216,7 @@ class Iterator_ResFile(Parse_File):
     def __init__(self, path):
         self.header = None
         self.software = "kma"
-        self.file = "Result"
+        self.extension = ".res"
 
         Parse_File.__init__(self, path)
 
@@ -248,19 +251,35 @@ class Iterator_ResFile(Parse_File):
                 if len(line_split) != len(self.header):
                     raise IndexError("Length of line is not equal to"
                                      " header")
-                hit = Hit_Alignment(software=self.software,
-                                    empty=False,
-                                    file=self.file)
-                for i in range(len(self.header)):
-                    try:
-                        value_entry = float(line_split[i])
-                    except ValueError:
-                        value_entry = line_split[i]
-                    feature_hit = Feature_hit(feature=self.header[i],
-                                              value=value_entry,
-                                              description=None)
-                    hit[self.header[i]] = feature_hit
+                hit = KMAHit(empty=False,
+                             file_type=self.extension)
+                hit = Iterator_ResFile.assign_KMAHit(hit, line_split,
+                                                     header=self.header)
                 entry_line = False
+        return hit
+
+    @staticmethod
+    def assign_KMAHit(hit, data, header=None):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                key = Translate_Hits.translate_keys(key,
+                                                    Translate_Hits.KMA_RES)
+                hit[key] = value
+        elif isinstance(data, list):
+            if len(data) != len(header):
+                raise IndexError("Length of line (%s)is not equal to"
+                                 " header (%s). Check if you have chosen "
+                                 "the right separator." % (len(data),
+                                                           len(header)
+                                                           ))
+            for n_feat in range(len(data)):
+                value = data[n_feat]
+                key = Translate_Hits.translate_keys(header[n_feat],
+                                                    Translate_Hits.KMA_RES)
+                hit[key] = value
+        else:
+            raise TypeError("Data has to be list or dictionary")
+
         return hit
 
 
@@ -269,6 +288,7 @@ class Iterator_MapstatFile(Parse_File):
     def __init__(self, path):
         self.header = None
         self.software = "kma"
+        self.extension = ".mapstat"
         Parse_File.__init__(self, path)
 
     def get_info(self):
@@ -314,18 +334,35 @@ class Iterator_MapstatFile(Parse_File):
                 if len(line_split) != len(self.header):
                     raise IndexError("Length of line is not equal to"
                                      " header")
-                hit = Hit_alignment(software=self.software,
-                                    templates_file=self.path, empty=False)
-                for i in range(len(self.header)):
-                    try:
-                        value_entry = float(line_split[i])
-                    except ValueError:
-                        value_entry = line_split[i]
-                    feature_hit = Feature_hit(feature=self.header[i],
-                                              value=value_entry,
-                                              description=None)
-                    hit[self.header[i]] = feature_hit
+                hit = KMAHit(empty=False,
+                             file_type=self.extension)
+                hit = Iterator_ResFile.assign_KMAHit(hit, line_split,
+                                                     header=self.header)
                 entry_line = False
+        return hit
+
+    @staticmethod
+    def assign_KMAHit(hit, data, header=None):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                key = Translate_Hits.translate_keys(key,
+                                                    Translate_Hits.KMA_MAPSTAT)
+                hit[key] = value
+        elif isinstance(data, list):
+            if len(data) != len(header):
+                raise IndexError("Length of line (%s)is not equal to"
+                                 " header (%s). Check if you have chosen "
+                                 "the right separator." % (len(data),
+                                                           len(header)
+                                                           ))
+            for n_feat in range(len(data)):
+                value = data[n_feat]
+                key = Translate_Hits.translate_keys(header[n_feat],
+                                                    Translate_Hits.KMA_MAPSTAT)
+                hit[key] = value
+        else:
+            raise TypeError("Data has to be list or dictionary")
+
         return hit
 
 
@@ -335,6 +372,7 @@ class Iterator_MatrixFile(Parse_File):
     def __init__(self, path, is_gzip=True):
         self.header = ["Nucleotide", "A", "C", "G", "T", "N", "-"]
         self.software = "kma"
+        self.extension = ".mat"
 
         Parse_File.__init__(self, path, is_gzip)
 
@@ -360,6 +398,7 @@ class Iterator_MatrixFile(Parse_File):
             line = self.file.readline()
             if line.startswith("#"):
                 if self.gene is not None:
+                    gene = self.gene
                     entry = self.template_df
                     entry_line = False
                 self.gene = line.replace("#", "").rstrip()
@@ -368,6 +407,7 @@ class Iterator_MatrixFile(Parse_File):
                 continue
             elif line == "":
                 if self.gene is not None:
+                    gene = self.gene
                     entry = self.template_df
                     entry_line = False
                 else:
@@ -381,11 +421,10 @@ class Iterator_MatrixFile(Parse_File):
                 row_series = pd.Series(data=line_split, index=self.header)
                 self.template_df = self.template_df.append(row_series,
                                                            ignore_index=True)
-
-#        return Hit_alignment(template=self.gene, software="KMA",
-#                             data={"Matrix": self.template_df})
-        return {self.gene: entry}
-
+        hit = KMAHit(file_type=self.extension)
+        hit["templateID"] = gene
+        hit["matrix"] = entry
+        return hit
 
 class Iterator_AlignmentFile(Parse_File):
     """Create iterator for a .frag file"""
@@ -394,6 +433,7 @@ class Iterator_AlignmentFile(Parse_File):
 
         Parse_File.__init__(self, path, is_gzip)
         self.software = "kma"
+        self.extension = ".aln"
 
         self.gene = None
         self.alignment = None
@@ -446,9 +486,10 @@ class Iterator_AlignmentFile(Parse_File):
             else:
                 aln_seq = str(line.split("\t")[-1].rstrip())
                 self.alignment["alignment_seq"].append(aln_seq)
-#        return Hit_alignment(template=self.gene, software="KMA",
-#                             data={"Alignment": entry})
-        return {self.gene: entry}
+        hit = KMAHit(file_type=self.extension)
+        hit["templateID"] = self.gene
+        hit["fragments"] = entry
+        return hit
 
 
 class Iterator_ConsensusFile(Parse_File):
@@ -458,6 +499,7 @@ class Iterator_ConsensusFile(Parse_File):
         self.gene = None
         self.sequence = None
         self.software = "kma"
+        self.extension = ".fsa"
 
         Parse_File.__init__(self, path)
 
@@ -497,9 +539,10 @@ class Iterator_ConsensusFile(Parse_File):
                 Parse_File.close(self)
             else:
                 self.sequence.append(line.rstrip())
-#        return Hit_alignment(template=self.gene, software="KMA",
-#                             data={"Consensus": self.sequence})
-        return {self.gene: self.sequence}
+        hit = KMAHit(file_type=self.extension)
+        hit["templateID"] = self.gene
+        hit["consensus_seq"] = self.sequence
+        return hit
 
 
 class Iterator_VCFFile(Parse_File):
@@ -509,6 +552,8 @@ class Iterator_VCFFile(Parse_File):
         self.header = None
         self.template_df = None
         self.software = "kma"
+        self.extension = ".vcf"
+
 
         Parse_File.__init__(self, path, is_gzip)
 
@@ -555,9 +600,10 @@ class Iterator_VCFFile(Parse_File):
                         entry_line = False
                     self.gene = line_split[0]
                     self.template_df = pd.DataFrame(columns=self.header)
-#        return Hit_alignment(template=self.gene, software="KMA",
-#                             data={"VCF": entry})
-        return {self.gene: entry}
+        hit = KMAHit(file_type=self.extension)
+        hit["templateID"] = self.gene
+        hit["vcf"] = entry
+        return hit
 
     def get_info(self):
         info = {}
@@ -589,6 +635,7 @@ class Iterator_SPAFile(Parse_File):
     def __init__(self, path):
         self.software = "kma"
         self.header = None
+        self.extension = ".spa"
 
         Parse_File.__init__(self, path)
 
@@ -623,17 +670,36 @@ class Iterator_SPAFile(Parse_File):
                 if len(line_split) != len(self.header):
                     raise IndexError("Length of line is not equal to"
                                      " header")
-                entry = {}
-                for i in range(len(self.header)):
-                    try:
-                        value_entry = float(line_split[i])
-                    except ValueError:
-                        value_entry = line_split[i]
-                    entry[self.header[i]] = value_entry
+                hit = KMAHit(empty=False,
+                             file_type=self.extension)
+                hit = Iterator_ResFile.assign_KMAHit(hit, line_split,
+                                                     header=self.header)
                 entry_line = False
-#        return Hit_alignment(template=entry["Template"], software="KMA",
-                             #data={"SPA": entry})
-        return {entry["Template"]: entry}
+            return hit
+
+    @staticmethod
+    def assign_KMAHit(hit, data, header=None):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                key = Translate_Hits.translate_keys(key,
+                                                    Translate_Hits.KMA_SPA)
+                hit[key] = value
+        elif isinstance(data, list):
+            if len(data) != len(header):
+                raise IndexError("Length of line (%s)is not equal to"
+                                 " header (%s). Check if you have chosen "
+                                 "the right separator." % (len(data),
+                                                           len(header)
+                                                           ))
+            for n_feat in range(len(data)):
+                value = data[n_feat]
+                key = Translate_Hits.translate_keys(header[n_feat],
+                                                    Translate_Hits.KMA_SPA)
+                hit[key] = value
+        else:
+            raise TypeError("Data has to be list or dictionary")
+
+        return hit
 
 
 class Iterator_FragmentFile(Parse_File):
@@ -644,6 +710,8 @@ class Iterator_FragmentFile(Parse_File):
         self.gene = None
         self.template_df = None
         self.software = "kma"
+        self.extension = ".frag"
+
 
         Parse_File.__init__(self, path, gzip)
 
@@ -699,6 +767,7 @@ class Iterator_FragmentFile(Parse_File):
                         entry_line = False
                     self.gene = line_split[5]
                     self.template_df = pd.DataFrame(columns=self.header)
-#        return Hit_alignment(template=self.gene, software="KMA",
-                             #data={"Fragment": entry})
-        return {self.gene: entry}
+        hit = KMAHit(file_type=self.extension)
+        hit["templateID"] = self.gene
+        hit["fragment"] = entry
+        return hit

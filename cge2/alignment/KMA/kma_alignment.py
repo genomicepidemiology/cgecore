@@ -6,7 +6,7 @@ import sys
 import json
 from cge2.alignment.file import _File
 from cge2.alignment.KMA.alignment_files import Read_Alignment
-from cge2.alignment.results_alignment import Hit_alignment
+from cge2.alignment.Hit import KMAHit
 
 
 class KMA_ResultFile(_File):

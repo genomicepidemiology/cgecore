@@ -9,6 +9,8 @@ import pandas as pd
 from cge2.alignment.file import _File
 from cge2.alignment.KMA.alignment_files import Read_Alignment
 import cge2.alignment.KMA.alignment_files as alignment_files
+from cge2.alignment.Hit import KMAHit
+
 
 
 class KMA_ResultFile(_File):
@@ -152,15 +154,13 @@ class Iterate_KMAFiles:
     def __next__(self):
         iter_true = True
         gene_output = {}
+        hit = KMAHit()
         while iter_true:
             for kma_file in self.files_kma:
                 entry = next(self.iter_KMAFiles[kma_file])
-                ### This part should be adapted when we have the hit object###
-                hit_template, data = list(entry.items())[0]
-                gene_output[kma_file] = data
-                ### ###
+                hit.merge(entry)
             iter_true = False
-        return {hit_template: gene_output}
+        return hit
 
 
 class Iterator_KMAAlignment:

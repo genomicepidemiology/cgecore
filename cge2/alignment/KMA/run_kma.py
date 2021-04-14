@@ -22,7 +22,8 @@ class KMA_aligner:
     def is_list_or_strings(lst):
         if isinstance(lst, str):
             return [lst]
-        elif bool(lst) and isinstance(lst, list) and all(isinstance(elem, str) for elem in lst):
+        elif(bool(lst) and isinstance(lst, list)
+                and all(isinstance(elem, str) for elem in lst)):
             return lst
         else:
             raise TypeError("The datasets variable have to be a string or a"
@@ -32,23 +33,15 @@ class KMA_aligner:
         if "output" not in self.kma_param:
             raise KeyError("The parameter 'output' is required for running"
                            " KMA")
-        #if not os.path.isdir(self.kma_param["template_db"]):
-        #    raise AttributeError("The parameter 'template_db' has to be a "
-        #                         "folder, where the different datasets are.")
 
     def make_commands(self, **kwargs):
         self.validate()
 
         for dataset in self.datasets:
             template_db = None
-#            if os.path.isfile(dataset):
             template_db = dataset
             dataset_name = os.path.basename(dataset)
             output_path = self.kma_param["output"] + dataset_name
-#            elif os.path.isfile(self.kma_param["template_db"] + "/" + dataset):
-#                template_db = self.kma_param["template_db"] + "/" + dataset
-#            else:
-#                raise OSError("Neither %s or %s template files exists" % (dataset, self.kma_param["template_db"] + "/" + dataset))
             command = KMACommandline(**kwargs)
             command.output = output_path
             command.template_db = template_db
@@ -79,7 +72,6 @@ class KMA_aligner:
             data = self.alignment_files(run_command, read_files)
             for hit in data:
                 self.results = itertools.chain(self.results, hit)
-            #self.results.update(data)
         if json_path:
             KMA_alignment.dump_json(json_path, self.results)
         return self.results
