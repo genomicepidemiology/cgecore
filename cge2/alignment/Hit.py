@@ -30,8 +30,9 @@ class Hit(dict):
     def __setitem__(self, i, y):
         if i in self:
             if self[i].set is True and self[i] != y:
-                raise KeyError("The object Hit cannot change the value of %s to %s "
-                               "because is already %s (%s)" % (i, y, self[i], self[i].set))
+                raise KeyError("The object Hit cannot change the value of %s "
+                               "to %s because is already %s (%s)" % (
+                                i, y, self[i], self[i].set))
             else:
                 self._setparam(i, y)
         else:
@@ -69,7 +70,6 @@ class BlastHit(Hit):
 
     def __init__(self, software="blast", data=None, empty=False,
                  file_type=None):
-        #super(Hit, self).__init__(software=software, empty=empty)
         super().__init__(software=software, empty=empty)
         if not isinstance(file_type, str):
             raise TypeError("File type has to be a string")
@@ -83,7 +83,7 @@ class BlastHit(Hit):
 
     def __str__(self):
         if self["templateID"].value is not None:
-            string_hit = "KMAHit on %s (" % self["templateID"]
+            string_hit = "BLASTHit on %s (" % self["templateID"]
             for key, value in self.items():
                 if value.set:
                     string_hit += "%s: %s, " % (key, value)
@@ -101,7 +101,6 @@ class BlastHit(Hit):
             repr_hit += "%s: %s, " % (key, value)
         repr_hit += "}"
         return repr_hit
-
 
     def incorporate_data(self, data):
 
@@ -154,7 +153,7 @@ class BlastHit(Hit):
 class KMAHit(Hit):
 
     def __init__(self, software="kma", data=None, empty=False, file_type=None):
-        super(Hit, self).__init__(software=software, data=data, empty=empty)
+        super().__init__(software=software, empty=empty)
         self.extension = file_type
         self._init_kmahit()
 
@@ -186,8 +185,8 @@ class KMAHit(Hit):
         elif self.extension is None:
             self.extension = []
         else:
-            raise TypeError(("The hits file that is being merged to is neither "
-                            "a string or a list (%s)") % self.extension)
+            raise TypeError(("The hits file that is being merged to is neither"
+                            " a string or a list (%s)") % self.extension)
 
         if isinstance(hit.extension, str):
             if hit.extension in self.extension:
@@ -198,8 +197,8 @@ class KMAHit(Hit):
         elif isinstance(hit.extension, list):
             for hit_file in hit.extension:
                 if hit_file in self.extension:
-                    raise ValueError(("The Hits information is coming from same"
-                                     " files"))
+                    raise ValueError(("The Hits information is coming from "
+                                      "same files"))
             self.extension.extend(hit.extension)
         elif hit.extension is None:
             if self.extension:
@@ -208,24 +207,27 @@ class KMAHit(Hit):
                 self.extension = None
         else:
             raise TypeError(("The hits file that is being merged is neither "
-                            "a string or a list (%s)%s" % (hit.extension, hit)))
+                            "a string or a list (%s)%s" % (hit.extension, hit))
+                            )
 
     def __str__(self):
-        if self["templateID"] is not None:
+        if self["templateID"].value is not None:
             string_hit = "KMAHit on %s (" % self["templateID"]
-            for key, value in sorted(self.items()):
-                if value is not None:
+            for key, value in self.items():
+                if value.set:
                     string_hit += "%s: %s, " % (key, value)
             string_hit = string_hit[:-2]
             string_hit += ")"
+        elif self["queryID"].value is not None:
+            string_hit = "No Hit by %s" % self["queryID"]
         else:
-            string_hit = "No hit"
+            string_hit = "No Hit"
         return string_hit
 
     def __repr__(self):
         if self["templateID"] is not None:
             string_hit = "KMAHit on %s (" % self["templateID"]
-            for key, value in sorted(self.items()):
+            for key, value in self.items():
                 string_hit += "%s: %s, " % (key, value)
             string_hit = string_hit[:-1]
             string_hit += ")"
@@ -238,4 +240,7 @@ class KMAHit(Hit):
         self._merge_files(hit)
 
         for key, values in hit.items():
-            self[key] = values
+            if values.set:
+                self._setparam(key, values)
+            else:
+                pass

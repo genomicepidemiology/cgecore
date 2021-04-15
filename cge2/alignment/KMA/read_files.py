@@ -12,7 +12,6 @@ import cge2.alignment.KMA.alignment_files as alignment_files
 from cge2.alignment.Hit import KMAHit
 
 
-
 class KMA_ResultFile(_File):
 
     def __init__(
@@ -158,6 +157,8 @@ class Iterate_KMAFiles:
         while iter_true:
             for kma_file in self.files_kma:
                 entry = next(self.iter_KMAFiles[kma_file])
+                print(entry)
+                print(hit)
                 hit.merge(entry)
             iter_true = False
         return hit
