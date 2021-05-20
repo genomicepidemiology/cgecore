@@ -28,5 +28,7 @@ setup(
     author='Center for Genomic Epidemiology',
     author_email='food-cgehelp@dtu.dk',
     url="https://bitbucket.org/genomicepidemiology/cge_core_module/src/2.0",
-    packages=['cge2'],
+    packages=['cge2', 'cge2.applications', 'cge2.applications.KMA',
+              'cge2.applications.blast', 'cge2.output', 'cge2.utils'],
+    include_package_data=True
 )

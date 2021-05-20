@@ -7,7 +7,8 @@ from cge2.applications.KMA import kma_application
 
 
 #####################
-__version__ = "2.0.0"
+__version__ = "2.0.1"
+
 __all__ = [
     "application"]
 
