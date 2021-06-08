@@ -105,7 +105,7 @@ the first seven digits of the Git commit checksum is expected here.
 
 ```json
 
-"gene": {
+"seq_region": {
     "type": "seq_region",
     "key": "string*",
     "name": "string*",
