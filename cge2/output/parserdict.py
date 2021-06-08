@@ -8,7 +8,7 @@ from cge2.output.valueparsers import ValueParsers
 class ParserDict(UserDict):
 
     def __init__(self, input_parser=None):
-        UserDict.__init__(self)
+        super().__init__(self)
 
         if(input_parser is None):
             parser_class = ValueParsers

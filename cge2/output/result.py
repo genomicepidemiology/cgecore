@@ -19,7 +19,7 @@ class Result(UserDict):
 
     def __init__(self, type, fmt_file=beone_json_path,
                  parsers=None, **kwargs):
-        UserDict.__init__(self)
+        super().__init__()
 
         self.defs = {}
         # classes in a template translates to Result objects.
