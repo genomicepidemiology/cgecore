@@ -123,7 +123,7 @@ the first seven digits of the Git commit checksum is expected here.
     "query_start_pos": "integer",
     "query_end_pos": "integer",
     "phenotypes": "array phenotype.key",
-    "ref_database": "database.key"
+    "ref_database": "database.key*"
   }
 
 ```
@@ -193,19 +193,24 @@ be found.
     "substitution": "bool",
     "insertion": "bool",
     "deletion": "bool",
-    "ref_database": "database.key",
-    "genes": "array gene.key",
+    "ref_database": "database.key*",
+    "seq_regions": "array gene.key",
     "phenotypes": "array phenotype.key"
   }
 
 ```
 
 **key**: Unique identifier for sequence variation. Format is:
-<name>\_<pos>\_<alternative_codon>, where name is seq_region name, alternative_nt is the codon in the input data, not the reference, and pos is the posiotion of the first nucleotide in the codon. The codon can be a single nucleotide if found in a non-coding region.  
-*Example*: 23S_357_t
+<seq_region>;;<ref_start_pos>;;<var_codon>(;;<random_string>), where pos is the
+position of the first nucleotide in the codon. The codon can be a single
+nucleotide if found in a non-coding region. If the first part is not unique then
+a small random string of small letters will be attached.
+*Example*: 23S;;357;;t
 
-**ref_id**: Same as key. See ISSUES section.  
-*Example*: folP_38_tta
+**ref_id**: String to identify the mutation in the reference database. Format
+is: <seq_region>;;<ref_start_pos>;;<var_codon>. Similar to key but not
+guarenteed to be unique.
+*Example*: folP;;28;;tta
 
 **seq_var**: String describing the nucleotide variation according [HGVS Sequence Variant Nomenclature](http://varnomen.hgvs.org/)  
 *Example*: p.I38L
@@ -307,12 +312,15 @@ promoter regions etc.
       "query_start_pos": "integer",
       "query_end_pos": "integer",
       "phenotypes": "array phenotype.key",
-      "ref_database": "database.key"
+      "ref_database": "database.key*"
     }
 
 ```
 
 ## ISSUES
+
+**genes and seq_variation notes**
+Should add a free text notes field for gene and seq_variation entries.
 
 **seq_variation key and ref_id**  
 Are they always identical. If so, can there be two identical keys?

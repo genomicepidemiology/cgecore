@@ -1,16 +1,24 @@
->>> from parserdict import ParserDict
->>> from valueparsers import ValueParsers
->>> from test_data.test_val_parse_fail import CustomValueParsers
+# Test ParserDict class
 
-### Test ParserDict.get_method_names
->>> parser_class = ValueParsers
->>> val_parser_list = ParserDict.get_method_names(parser_class)
+## imports
 
-### Test ParserDict
+```python
+
+>>> from cge2.output.parserdict import ParserDict
+>>> from cge2.output.valueparsers import ValueParsers
+>>> from cge2.output.test_data.test_val_parse_fail import CustomValueParsers
+
+```
+
+## ParserDict(input_parser)
+
+```python
+
 >>> default_parser = ParserDict()
 >>> default_parser["char64"]("54d762f5aacbd706457d109d520e3c550feb8df"
 ...                          "edc4f0d8ccae1ad203e3388c0")
 
+>>> parser_class = ValueParsers
 >>> custom_parser = ParserDict(parser_class)
 >>> custom_parser["char64"]("54d762f5aacbd706457d109d520e3c550feb8df"
 ...                         "edc4f0d8ccae1ad203e3388c0")
@@ -23,3 +31,16 @@
 ... except SyntaxError as e:
 ...    print(e)
 A function in the CustomValueParsers class did not start with 'parse_'. Function is named: char64
+
+```
+
+### Methods
+
+## get_method_names(cls)
+
+```python
+
+>>> parser_class = ValueParsers
+>>> val_parser_list = ParserDict.get_method_names(parser_class)
+
+```

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+from collections import UserDict
+
 from cge2.output.valueparsers import ValueParsers
 
 
-class ParserDict(dict):
+class ParserDict(UserDict):
 
     def __init__(self, input_parser=None):
+        UserDict.__init__(self)
 
         if(input_parser is None):
             parser_class = ValueParsers

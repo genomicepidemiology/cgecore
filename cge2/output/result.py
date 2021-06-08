@@ -2,12 +2,15 @@
 
 import json
 import os.path
+from datetime import datetime, timezone
+from collections import UserDict
 
+from cge2.utils.pliers import Pliers
 from cge2.output.parserdict import ParserDict
 from cge2.output.exceptions import CGECoreOutTypeError, CGECoreOutInputError
 
 
-class Result(dict):
+class Result(UserDict):
 
     BEONE_JSON_FILE = "beone/beone.json"
     TEMPLATE_DIR = "templates_json"
@@ -16,6 +19,7 @@ class Result(dict):
 
     def __init__(self, type, fmt_file=beone_json_path,
                  parsers=None, **kwargs):
+        UserDict.__init__(self)
 
         self.defs = {}
         # classes in a template translates to Result objects.
@@ -37,6 +41,53 @@ class Result(dict):
             self[d] = {}
 
         self.add(**kwargs)
+
+    @staticmethod
+    def init_software_result(name, gitdir):
+        """
+            Input: software_name, path to git directory
+            Return: Result object with type: software_result
+        """
+        version, commit = Pliers.get_version_commit(gitdir)
+        date = datetime.now(timezone.utc).date().isoformat()
+
+        result_dict = {
+            "type": "software_result",
+            "software_name": name,
+            "software_version": version,
+            "software_commit": commit,
+            "run_date": date,
+            "key": "{}-{}".format(name, version)
+        }
+        return Result(**result_dict)
+
+    def init_database(self, name, db_dir):
+        database_metadata = {}
+        database_metadata["type"] = "database"
+        database_metadata["database_name"] = name
+
+        version, commit = Pliers.get_version_commit(db_dir)
+        database_metadata["database_version"] = version
+        database_metadata["key"] = "{}-{}".format(name, version)
+        database_metadata["database_commit"] = commit
+
+        self.add_class(cl="databases", **database_metadata)
+
+    def get_db_key(self, name):
+        """
+            Input:
+                name: database name for which key(s) are desired.
+            Ouput:
+                list of keys: List of all keys which values match the input.
+
+            Method for retrieving all keys for a specific database name. Often
+            you will only expect a list with a single entry.
+        """
+        key_list = []
+        for key, val in self["databases"].items():
+            if(val["database_name"] == name):
+                key_list.append(key)
+        return key_list
 
     def _set_type(self, type):
         if(type in self.defs):

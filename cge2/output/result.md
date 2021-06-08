@@ -7,7 +7,46 @@
 
 ```
 
-## Usage
+## Usage for CGE developers
+
+### Initialize the root Result class for CGE tools
+
+The format of "software_result" and all other results created by the CGE tools
+should adhere to the format defined here: [Templates](https://bitbucket.org/genomicepidemiology/cge_core_module/src/2.0/cge2/output/templates_json/beone/README.md)
+
+All CGE tools should have some common basic information. Hence, this method
+should be used to initialize a result object in which the tool will store all
+results produces that are meant to be useful for the user of the tool.
+
+```python
+
+>>> res = Result.init_software_result(name="ResFinder", gitdir=".")
+>>> res["type"]
+'software_result'
+>>> res["software_name"]
+'ResFinder'
+
+```
+
+### Initialize object for database entries
+
+```python
+
+>>> res["databases"]
+{}
+>>> res.init_database("ResFinder", ".")
+>>> db_key = res.get_db_key("ResFinder")[0]
+>>> dbinfo = res["databases"][db_key]
+>>> dbinfo["type"]
+'database'
+>>> dbinfo["database_name"]
+'ResFinder'
+>>> len(dbinfo["database_commit"])
+40
+
+```
+
+## Usage in general
 
 ### Initialize Result class
 
@@ -68,9 +107,9 @@ dictionaries, but just in the "root" dictionary.
 True
 >>> "databases" in res_parser1.arrays
 False
->>> res_parser2 = ResultParser(result_def=res.defs["gene"])
+>>> res_parser2 = ResultParser(result_def=res.defs["seq_region"])
 >>> res_parser2["type"]
-'gene'
+'seq_region'
 >>> res_parser2.arrays["phenotypes"]
 'phenotype.key'
 
@@ -143,7 +182,7 @@ that are stored in dictionaries or arrays.
 ...                  "software_version": "d48a0fe"})
 >>> assert ("virulencefinder" in res)
 >>> assert ("software_name" in res["virulencefinder"])
->>> assert ("genes" in res["virulencefinder"])
+>>> assert ("seq_regions" in res["virulencefinder"])
 >>> assert ("databases" in res["virulencefinder"])
 >>> assert ("phenotypes" in res["virulencefinder"])
 >>> assert ("seq_variations" in res["virulencefinder"])
@@ -246,6 +285,10 @@ cge2.output.exceptions.CGECoreOutInputError: ("Some input data did not pass
     validation... 'amr_resistant': 'Value must be a bool...'...)
 
 ```
+
+#### get_db_key(name)
+
+See "Initialize object for database entries"
 
 
 ### Private Methods

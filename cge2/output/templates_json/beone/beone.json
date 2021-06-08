@@ -10,7 +10,7 @@
     "run_id": "string",
     "run_date": "date",
     "databases": "dict database:class",
-    "genes": "dict gene:class",
+    "seq_regions": "dict seq_region:class",
     "seq_variations": "dict seq_variation:class",
     "phenotypes": "dict phenotype:class"
   },
@@ -23,9 +23,10 @@
     "database_commit": "string",
     "checksum_sha256": "char64"
   },
-"gene": {
-    "type": "gene",
+"seq_region": {
+    "type": "seq_region",
     "key": "string*",
+    "gene": "bool_or_unknown",
     "name": "string*",
     "identity": "percentage",
     "alignment_length": "integer",
@@ -42,26 +43,6 @@
     "phenotypes": "array phenotype.key",
     "ref_database": "database.key"
   },
-"seq_region": {
-      "type": "seq_region",
-      "key": "string*",
-      "name": "string*",
-      "gene": "bool_or_unknown",
-      "identity": "percentage",
-      "alignment_length": "integer",
-      "ref_gene_lenght": "integer",
-      "coverage": "percentage",
-      "depth": "float",
-      "ref_id": "string*",
-      "ref_acc": "string",
-      "ref_start_pos": "integer",
-      "ref_end_pos": "integer",
-      "query_id": "string",
-      "query_start_pos": "integer",
-      "query_end_pos": "integer",
-      "phenotypes": "array phenotype.key",
-      "ref_database": "database.key"
-    },
 "seq_variation": {
     "type": "seq_variation",
     "key": "string*",
