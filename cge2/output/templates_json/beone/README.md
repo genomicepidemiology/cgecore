@@ -6,10 +6,9 @@ BeOne example output from ResFinder: [example.json](https://bitbucket.org/genomi
 
 - **software_result**
 - **database**
-- **gene**
+- **seq_region**
 - **seq_variation**
 - **phenotype**
-- **seq_region**
 
 ### software_result
 
@@ -26,7 +25,7 @@ BeOne example output from ResFinder: [example.json](https://bitbucket.org/genomi
     "run_id": "string",
     "run_date": "date",
     "databases": "dict database:class",
-    "genes": "dict gene:class",
+    "seq_regions": "dict seq_region:class",
     "seq_variations": "dict seq_variation:class",
     "phenotypes": "dict phenotype:class"
   }
@@ -60,7 +59,7 @@ identical run_ids should indicate two identical runs. This could be a checksum.
 
 **databases**: See "database" description.
 
-**genes**: See "gene" description.
+**seq_regions**: See "gene" description.
 
 **seq_variations**: See "seq_variation".
 
@@ -102,17 +101,18 @@ the first seven digits of the Git commit checksum is expected here.
 **checksum_sha256**: SHA256 checksum of entire database.  
 *Example*: 08304e062528ae12ecb07abe139e26512fb5991e36df93e30e0d92d885479709
 
-### gene
+### seq_region
 
 ```json
 
 "gene": {
-    "type": "gene",
+    "type": "seq_region",
     "key": "string*",
     "name": "string*",
+    "gene": "bool_or_unknown",
     "identity": "percentage",
     "alignment_length": "integer",
-    "ref_gene_lenght": "integer",
+    "ref_seq_lenght": "integer",
     "coverage": "percentage",
     "depth": "float",
     "ref_id": "string*",
@@ -123,56 +123,60 @@ the first seven digits of the Git commit checksum is expected here.
     "query_start_pos": "integer",
     "query_end_pos": "integer",
     "phenotypes": "array phenotype.key",
-    "ref_database": "database.key*"
+    "ref_database": "database.key*",
+    "note": "string"
   }
 
 ```
 
-**key**: Unique identifier for gene hit. Several hits to the same gene can
-occur. Unlike the ref_id, this key must be unique between these hits.  
+**key**: Unique identifier for seq_region hit. Several hits to the same seq_region can occur. Unlike the ref_id, this key must be unique between these hits.  
 *Example*: aph(6)-Id;;1;;M28829;;d5sm
 
-**name**: Gene name.  
+**name**: Gene name / Region name.  
 *Example*: aph(6)-Id
 
+**gene**: True if the seq_region is a gene, if not, False or unknown.
+
 **identity**: Percent identical bps between query data (input) and reference
-gene (database).
+seq_region (database).
 
 **alignment_length**: Number of bps in the alignment between query and
 reference.
 
-**ref_gene_lenght**: Length in bps of the reference gene.
+**ref_seq_lenght**: Length in bps of the reference seq_region.
 
-**coverage**: Percentage of the reference gene covered by the query data.
+**coverage**: Percentage of the reference seq_region covered by the query data.
 
-**depth**: Average number of times the reference gene has been covered by the
+**depth**: Average number of times the reference seq_region has been covered by the
 query data.
 
-**ref_id**: Unique identifier for gene in database, but doesn't have to be
+**ref_id**: Unique identifier for seq_region in database, but doesn't have to be
 unique in the results. See also "key".  
 *Example*: aph(6)-Id_1_M28829
 
-**ref_acc**: If the reference gene is extracted from a public database, the
+**ref_acc**: If the reference seq_region is extracted from a public database, the
 accession number identifying the sequence is stored here.  
 *Example*: M28829
 
-**ref_start_pos**: Position in reference gene where the alignment starts.
+**ref_start_pos**: Position in reference seq_region where the alignment starts.
 
-**ref_end_pos**: Position in reference gene where the alignment ends.
+**ref_end_pos**: Position in reference seq_region where the alignment ends.
 
 **query_id**: Unique identifier for the input sequence. For example a contig or
 read header.  
 *Example*: NODE_47_length_14097_cov_7.40173_ID_3656
 
-**query_start_pos**: Position in query gene where the alignment starts.
+**query_start_pos**: Position in query seq_region where the alignment starts.
 
-**query_end_pos**: Position in query gene where the alignment starts.
+**query_end_pos**: Position in query seq_region where the alignment starts.
 
-**phenotypes**: List of phenotypes associated to the gene.
+**phenotypes**: List of phenotypes associated to the seq_region.
 
-**ref_database**: Uniquely identifying the database where the reference gene can
+**ref_database**: Uniquely identifying the database where the reference seq_region can
 be found.  
 *Example*: PointFinder-d48a0fe
+
+**note**: Free text field for additional information.
 
 ### seq_variation
 
@@ -194,7 +198,7 @@ be found.
     "insertion": "bool",
     "deletion": "bool",
     "ref_database": "database.key*",
-    "seq_regions": "array gene.key",
+    "seq_regions": "array seq_region.key",
     "phenotypes": "array phenotype.key"
   }
 
@@ -245,7 +249,7 @@ guarenteed to be unique.
 **ref_database**: Uniquely identifying the database where the variation is annotated.  
 *Example*:PointFinder-6323b5c
 
-**genes**: List of genes associated to the sequence variation.
+**seq_regions**: List of seq_regions associated to the sequence variation.
 
 **phenotypes**: List of phenotypes associated to the sequence variation.
 
@@ -260,7 +264,7 @@ guarenteed to be unique.
     "amr_classes": "array vocabulary",
     "amr_resistance": "vocabulary",
     "amr_resistant": "bool_or_unknown",
-    "genes": "array gene.key",
+    "seq_regions": "array seq_region.key",
     "seq_variations": "array seq_variation.key",
     "ref_database": "database.key"
   }
@@ -279,48 +283,18 @@ guarenteed to be unique.
 
 **amr_resistant**: Indicates if the phenotype in question describes amr resistance.
 
-**genes**: List of genes causing the phenotype, found in the output in question. Not a comprehensive list of genes causing the phenotype in question.
+**seq_regions**: List of seq_regions causing the phenotype, found in the output in question. Not a comprehensive list of seq_regions causing the phenotype in question.
 
 **seq_variations**: List of sequence variations causing the phenotype, found in the output in question. Not a comprehensive list of sequence variations causing the phenotype in question.
 
 **ref_database**: Uniquely identifying the database where the variation is annotated.  
 *Example*: ResFinder-d48a0fe
 
-### seq_region
-
-**Under construction**
-This class will take over from "gene" as it is more appropriate for hits in
-promoter regions etc.
-
-```json
-
-"seq_region": {
-      "type": "seq_region",
-      "key": "string*",
-      "name": "string*",
-      "gene": "bool_or_unknown",
-      "identity": "percentage",
-      "alignment_length": "integer",
-      "ref_gene_lenght": "integer",
-      "coverage": "percentage",
-      "depth": "float",
-      "ref_id": "string*",
-      "ref_acc": "string",
-      "ref_start_pos": "integer",
-      "ref_end_pos": "integer",
-      "query_id": "string",
-      "query_start_pos": "integer",
-      "query_end_pos": "integer",
-      "phenotypes": "array phenotype.key",
-      "ref_database": "database.key*"
-    }
-
-```
 
 ## ISSUES
 
 **genes and seq_variation notes**
-Should add a free text notes field for gene and seq_variation entries.
+Should add a free text notes field for seq_variation entries.
 
 **seq_variation key and ref_id**  
 Are they always identical. If so, can there be two identical keys?
