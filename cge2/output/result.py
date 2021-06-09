@@ -5,7 +5,7 @@ import os.path
 from datetime import datetime, timezone
 from collections import UserDict
 
-from cge2.utils.pliers import Pliers
+from cge2.utils.pliers_mixin import PliersMixin
 from cge2.output.parserdict import ParserDict
 from cge2.output.exceptions import CGECoreOutTypeError, CGECoreOutInputError
 
@@ -48,7 +48,7 @@ class Result(UserDict):
             Input: software_name, path to git directory
             Return: Result object with type: software_result
         """
-        version, commit = Pliers.get_version_commit(gitdir)
+        version, commit = PliersMixin.get_version_commit(gitdir)
         date = datetime.now(timezone.utc).date().isoformat()
 
         result_dict = {
@@ -66,7 +66,7 @@ class Result(UserDict):
         database_metadata["type"] = "database"
         database_metadata["database_name"] = name
 
-        version, commit = Pliers.get_version_commit(db_dir)
+        version, commit = PliersMixin.get_version_commit(db_dir)
         database_metadata["database_version"] = version
         database_metadata["key"] = "{}-{}".format(name, version)
         database_metadata["database_commit"] = commit
