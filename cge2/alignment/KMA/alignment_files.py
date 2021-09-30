@@ -7,10 +7,8 @@ import pandas as pd
 from Bio import SeqIO
 import signal
 import sys
-from cge2.alignment.results_alignment import Hit_Alignment, Feature_hit
 from cge2.alignment.Hit import KMAHit
 from cge2.alignment.translate_hits import Translate_Hits
-
 
 
 class Read_Alignment:
@@ -46,8 +44,10 @@ class Read_Alignment:
                                       "start_aln", "end_aln", "template",
                                       "query_name"]
         else:
-            raise KeyError("Fragments file %s has not 7 or 9 columns" % file_path)
-        for template, data in frag_dataframe.groupby("template", as_index=False):
+            raise KeyError(("Fragments file %s has not 7 or 9 columns"
+                            % file_path))
+        for template, data in frag_dataframe.groupby("template",
+                                                     as_index=False):
             fragment_dict[template] = data.reset_index(drop=True)
         return fragment_dict
 
@@ -426,6 +426,7 @@ class Iterator_MatrixFile(Parse_File):
         hit["matrix"] = entry
         return hit
 
+
 class Iterator_AlignmentFile(Parse_File):
     """Create iterator for a .frag file"""
 
@@ -535,7 +536,7 @@ class Iterator_ConsensusFile(Parse_File):
                     entry = self.sequence
                     entry_line = False
                 else:
-                    entry = None
+                    entry = None    #BUG?
                 Parse_File.close(self)
             else:
                 self.sequence.append(line.rstrip())
@@ -657,7 +658,6 @@ class Iterator_SPAFile(Parse_File):
         while entry_line:
             line = self.file.readline()
             if line == "":
-                entry = None
                 Parse_File.close(self)
                 raise StopIteration("The iterator has arrived to the end of "
                                     "the file")
@@ -711,7 +711,6 @@ class Iterator_FragmentFile(Parse_File):
         self.template_df = None
         self.software = "kma"
         self.extension = ".frag"
-
 
         Parse_File.__init__(self, path, gzip)
 

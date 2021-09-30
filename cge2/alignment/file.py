@@ -89,7 +89,7 @@ class _Parse_File(object):
         print("CGEFile closed!")
 
 
-class ResultFile(_File):
+class _ResultFile(_File):
 
     def __init__(
         self,

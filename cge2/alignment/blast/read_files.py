@@ -13,7 +13,7 @@ import cge2.alignment.blast.alignment_files as alignment_files
 
 class BLASTN_alignment:
 
-    def __init__(self, output_path, files):
+    def __init__(self, output_path, file_name, files):
         self.output_path = output_path
 
         self.BLASTN_FILES = {
@@ -49,7 +49,7 @@ class BLASTN_alignment:
         return "BLASTN_alignment(" + str(repr_lst) + ")"
 
 
-class Iterator_KMAAlignment:
+class Iterator_BLASTNAlignment:
 
     def __init__(self, output_path, template_files, output_files):
         self.output_path = output_path
@@ -64,6 +64,7 @@ class Iterator_KMAAlignment:
         return self
 
     def __next__(self):
+
         hit_template = None
         if self.iter_dataset is None:
             dataset_file = self.output_path + self.output_files[self.aln_pos]

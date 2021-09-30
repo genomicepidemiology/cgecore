@@ -1,89 +1,44 @@
 # Created by Alfred Ferrer Florensa
 """Contains objects for reading """
 
-import os
-import sys
-import gzip
-import signal
-import pandas as pd
-from cge2.alignment.file import _File
-from cge2.alignment.KMA.alignment_files import Read_Alignment
+from cge2.alignment.file import _File, _ResultFile
 import cge2.alignment.KMA.alignment_files as alignment_files
 from cge2.alignment.Hit import KMAHit
 
 
-class KMA_ResultFile(_File):
-
-    def __init__(
-        self,
-        name,
-        output,
-        read_method=None,
-        extension="",
-        compression=None,
-    ):
-        self.name = name
-        if output is None:
-            output = ""
-        file_path = output + extension
-        self.extension = extension
-        self.read_method = read_method
-
-        _File.__init__(self, file_path=file_path, compression=compression)
-
-    def __str__(self):
-        return self.file_path
-
-    def __repr__(self):
-        return "%s(file=%s, compression=%s, read_method=%s)" % (
-                self.name.capitalize(), self.file_path, self.compression,
-                self.read_method)
-
-    def read(self):
-
-        _File.define_file(self)
-        if self.read_method is None:
-            return None
-        else:
-            return self.read_method(self.file_path)
-
-    def dump_json(self):
-        pass
-
-
 class KMA_alignment:
 
-    def __init__(self, output_path, files):
+    def __init__(self, output_path, filename, files):
         self.output_path = output_path
 
         self.KMA_FILES = {
             "Result":
-            KMA_ResultFile("Result", output_path, extension=".res",
-                           read_method=alignment_files.Iterator_ResFile),
+            _ResultFile("Result", output_path, extension=".res",
+                        read_method=alignment_files.Iterator_ResFile),
             "Fragments":
-            KMA_ResultFile("Fragments", output_path, extension=".frag.gz",
-                           read_method=alignment_files.Iterator_FragmentFile),
+            _ResultFile("Fragments", output_path, extension=".frag.gz",
+                        read_method=alignment_files.Iterator_FragmentFile),
             "Consensus":
-            KMA_ResultFile("Consensus", output_path, extension=".fsa",
-                           read_method=alignment_files.Iterator_ConsensusFile),
+            _ResultFile("Consensus", output_path, extension=".fsa",
+                        read_method=alignment_files.Iterator_ConsensusFile),
             "Alignment":
-            KMA_ResultFile("Alignment", output_path, extension=".aln",
-                           read_method=alignment_files.Iterator_AlignmentFile),
+            _ResultFile("Alignment", output_path, extension=".aln",
+                        read_method=alignment_files.Iterator_AlignmentFile),
             "Matrix":
-            KMA_ResultFile("Matrix", output_path, extension=".mat.gz",
-                           read_method=alignment_files.Iterator_MatrixFile),
+            _ResultFile("Matrix", output_path, extension=".mat.gz",
+                        read_method=alignment_files.Iterator_MatrixFile),
             "Mapstat":
-            KMA_ResultFile("Mapstat", output_path, extension=".mapstat",
-                           read_method=alignment_files.Iterator_MapstatFile),
+            _ResultFile("Mapstat", output_path, extension=".mapstat",
+                        read_method=alignment_files.Iterator_MapstatFile),
             "Frag_Raw":
-            KMA_ResultFile("Frag_Raw", output_path, extension=".frag_raw.gz",
-                           read_method=None),
+            _ResultFile("Frag_Raw", output_path, extension=".frag_raw.gz",
+                        read_method=None),
             "VCF":
-            KMA_ResultFile("VCF", output_path, extension=".vcf.gz",
-                           read_method=alignment_files.Iterator_VCFFile),
+            _ResultFile("VCF", output_path, extension=".vcf.gz",
+                        read_method=alignment_files.Iterator_VCFFile),
             "Sparse":
-            KMA_ResultFile("Sparse", output_path, extension=".spa",
-                           read_method=alignment_files.Iterator_SPAFile),
+            _ResultFile("Sparse", output_path, extension=".spa",
+                        read_method=alignment_files.Iterator_SPAFile),
                             }
         if not isinstance(files, list):
             files = [files]
@@ -136,11 +91,11 @@ class KMA_alignment:
         return "KMA_alignment(" + ", ".join(repr_lst) + ")"
 
 
-class Iterate_KMAFiles:
+class Iterator_KMAFiles:
 
-    def __init__(self, output_path, files):
+    def __init__(self, output_path, filename, files):
 
-        KMAfiles = KMA_alignment(output_path, files)
+        KMAfiles = KMA_alignment(output_path, filename, files)
         self.files_kma = files
         self.iter_KMAFiles = {}
         for files in KMAfiles:
@@ -152,19 +107,16 @@ class Iterate_KMAFiles:
 
     def __next__(self):
         iter_true = True
-        gene_output = {}
         hit = KMAHit()
         while iter_true:
             for kma_file in self.files_kma:
                 entry = next(self.iter_KMAFiles[kma_file])
-                print(entry)
-                print(hit)
                 hit.merge(entry)
             iter_true = False
         return hit
 
 
-class Iterator_KMAAlignment:
+class Iterator_AlignmentKMA:
 
     def __init__(self, output_path, template_files, output_files):
         self.output_path = output_path
@@ -173,6 +125,7 @@ class Iterator_KMAAlignment:
         self.template_files = template_files
         self.aln_pos = 0
         self.iter_dataset = None
+        print(self.output_files, self.output_files[self.aln_pos])
 
     def __iter__(self):
 
@@ -181,17 +134,16 @@ class Iterator_KMAAlignment:
     def __next__(self):
         hit_template = None
         if self.iter_dataset is None:
-            dataset_file = self.output_path + self.output_files[self.aln_pos]
-            self.iter_dataset = Iterate_KMAFiles(output_path=dataset_file,
-                                                 files=self.template_files)
+            self.iter_dataset = Iterator_KMAFiles(output_path=self.output_path,
+                                                  filename=str(self.output_files[self.aln_pos]),
+                                                  files=self.template_files)
         while hit_template is None:
             try:
                 hit_template = next(self.iter_dataset)
             except StopIteration:
                 self.aln_pos += 1
-                dataset_file = (self.output_path
-                                + self.output_files[self.aln_pos])
-                self.iter_dataset = Iterate_KMAFiles(output_path=dataset_file,
-                                                     files=self.template_files)
+                self.iter_dataset = Iterator_KMAFiles(output_path=self.output_path,
+                                                      filename=self.output_files[self.aln_pos],
+                                                      files=self.template_files)
 
         return hit_template

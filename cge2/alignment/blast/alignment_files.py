@@ -6,7 +6,6 @@ import io
 import pandas as pd
 import signal
 import sys
-from cge2.alignment.results_alignment import Feature_hit, Hit_Alignment
 from cge2.alignment.Hit import Hit, BlastHit, KMAHit
 from cge2.alignment.file import _Parse_File
 from Bio.Blast.NCBIXML import parse as BioXMLParse
