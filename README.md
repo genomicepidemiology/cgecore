@@ -1,3 +1,9 @@
+# Breaking changes!
+
+We will update to version 2.0. It is completely different from the current version 1.5.7 and all external code using this and older
+versions will break if attempting to use the 2.0 and above, unchanged.
+To maintain legacy functionality, use version [1.5.7](https://bitbucket.org/genomicepidemiology/cge_core_module/commits/tag/1.5.7).
+
 # cge_core_module
 
 Core module for the Center for Genomic Epidemiology
