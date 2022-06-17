@@ -128,8 +128,6 @@ class Blaster():
                             # best_bit = hsp.bits
                             tmp = alignment.title.split(" ")
                             sbjct_header = tmp[1]
-                            # DEBUG
-                            print("Found: {}".format(sbjct_header))
                             bit = hsp.bits
                             sbjct_length = alignment.length
                             sbjct_start = hsp.sbjct_start
