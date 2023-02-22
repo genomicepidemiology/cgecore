@@ -491,6 +491,13 @@ class Blaster():
 
                     del tmp_gene_split[old_db_hit][hit]
 
+        # check for future gene_result - gene_split inconsistencies
+        if (save == 0
+            and new_db_hit in tmp_gene_split
+            and hit_id in tmp_gene_split[new_db_hit]):
+
+            del tmp_gene_split[new_db_hit][hit_id]
+
         return save, tmp_gene_split, tmp_results
 
     @staticmethod
